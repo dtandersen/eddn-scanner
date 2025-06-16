@@ -51,7 +51,7 @@ class SignalDiscoveredHandler(EventHandler[SignalDiscoveredEvent]):
         #     # )
         #     if not signal.IsStation:
         #         return
-        if station_count == 0:
+        if station_count >= 0:
             return
 
         self._log.info(

@@ -1,4 +1,5 @@
 import json
+import locale
 import logging
 from typing import Any, Callable, Dict, List
 import zlib
@@ -7,6 +8,7 @@ import zmq
 import zmq.asyncio
 import asyncio
 
+from scanner.event.commodity import CommodityEvent, CommodityHandler
 from scanner.event.docking import DockingEvent, DockingHandler
 from scanner.event.event import EventHandler
 from scanner.event.signals import SignalDiscoveredEvent, SignalDiscoveredHandler
@@ -20,28 +22,29 @@ class EddnScanner:
     ):
         self._endpoint = endpoint
         self._timeout = timeout
+        self._commodities: List[EventHandler[CommodityEvent]] = []
         self._docking: List[EventHandler[DockingEvent]] = []
         self._signals: List[EventHandler[SignalDiscoveredEvent]] = []
         self._log = logging.getLogger(__name__)
         self._config = Config(strict=True)
         self._schema_handlers: Dict[str, Callable[[Dict[str, Any]], None]] = {
-            "https://eddn.edcd.io/schemas/dockinggranted/1": self._docking_handler,
-            "https://eddn.edcd.io/schemas/fsssignaldiscovered/1": self._signal_handler,
-            "https://eddn.edcd.io/schemas/journal/1": self._null_handler,
-            "https://eddn.edcd.io/schemas/fssbodysignals/1": self._null_handler,
-            "https://eddn.edcd.io/schemas/fssdiscoveryscan/1": self._null_handler,
-            "https://eddn.edcd.io/schemas/fssallbodiesfound/1": self._null_handler,
-            "https://eddn.edcd.io/schemas/scanbarycentre/1": self._null_handler,
             "https://eddn.edcd.io/schemas/approachsettlement/1": self._null_handler,
-            "https://eddn.edcd.io/schemas/outfitting/2": self._null_handler,
-            "https://eddn.edcd.io/schemas/navroute/1": self._null_handler,
             "https://eddn.edcd.io/schemas/codexentry/1": self._null_handler,
-            "https://eddn.edcd.io/schemas/shipyard/2": self._null_handler,
+            "https://eddn.edcd.io/schemas/commodity/3": self._commodity_handler,
             "https://eddn.edcd.io/schemas/dockingdenied/1": self._null_handler,
-            "https://eddn.edcd.io/schemas/commodity/3": self._null_handler,
+            "https://eddn.edcd.io/schemas/dockinggranted/1": self._docking_handler,
             "https://eddn.edcd.io/schemas/fcmaterials_capi/1": self._null_handler,
             "https://eddn.edcd.io/schemas/fcmaterials_journal/1": self._null_handler,
+            "https://eddn.edcd.io/schemas/fssallbodiesfound/1": self._null_handler,
+            "https://eddn.edcd.io/schemas/fssbodysignals/1": self._null_handler,
+            "https://eddn.edcd.io/schemas/fssdiscoveryscan/1": self._null_handler,
+            "https://eddn.edcd.io/schemas/fsssignaldiscovered/1": self._signal_handler,
+            "https://eddn.edcd.io/schemas/journal/1": self._null_handler,
             "https://eddn.edcd.io/schemas/navbeaconscan/1": self._null_handler,
+            "https://eddn.edcd.io/schemas/navroute/1": self._null_handler,
+            "https://eddn.edcd.io/schemas/outfitting/2": self._null_handler,
+            "https://eddn.edcd.io/schemas/scanbarycentre/1": self._null_handler,
+            "https://eddn.edcd.io/schemas/shipyard/2": self._null_handler,
         }
 
     async def start(self):
@@ -70,12 +73,14 @@ class EddnScanner:
             # sys.stdout.flush()
             # sock.disconnect(self._endpoint)
         finally:
+            self._log.info("Disconnecting from EDDN...")
             sock.disconnect(self._endpoint)
 
     async def process_event(self, msg: bytes):
-        # self._log.info(f"process_event {msg}")
         try:
             json_msg = json.loads(msg)
+            # pretty = json.dumps(json_msg, indent=2)
+            # self._log.debug(f"{pretty}")
             schema = json_msg.get("$schemaRef")
             # self._log.info(f"Received message with schema: {schema}")
             json_msg["schemaRef"] = schema
@@ -96,6 +101,11 @@ class EddnScanner:
             self._log.exception(e)
             # sys.stdout.flush()
 
+    def _commodity_handler(self, json_msg: Dict[str, Any]):
+        commodity = from_dict(CommodityEvent, json_msg, self._config)
+        for handler in self._commodities:
+            handler.on_event(commodity)
+
     def _docking_handler(self, json_msg: Dict[str, Any]):
         docking = from_dict(DockingEvent, json_msg, self._config)
         for handler in self._docking:
@@ -112,6 +122,9 @@ class EddnScanner:
     def _unknown_schema_handler(self, json_msg: Dict[str, Any]):
         pretty = json.dumps(json_msg, indent=2)
         print(pretty)
+
+    def add_commodity_handler(self, handler: EventHandler[CommodityEvent]):
+        self._commodities.append(handler)
 
     def add_docking_handler(self, handler: DockingHandler):
         # self.handler = handler
@@ -130,6 +143,7 @@ def schema_key(key: str) -> str:
 
 
 async def main():
+    locale.setlocale(locale.LC_ALL, "")
     file_handler = logging.FileHandler("scanner.log")
     # file_handler.addFilter(DuplicateFilter())
     file_handler.setLevel(logging.DEBUG)
@@ -149,6 +163,7 @@ async def main():
     scanner = EddnScanner()
     scanner.add_docking_handler(DockingHandler())
     scanner.add_signal_handler(SignalDiscoveredHandler())
+    scanner.add_commodity_handler(CommodityHandler())
     await scanner.start()
 
 
