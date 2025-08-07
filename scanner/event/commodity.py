@@ -7,7 +7,7 @@ from typing import List, Optional, Union
 
 
 @dataclass
-class Commodity:
+class CommodityEvent:
     name: str
     meanPrice: int
     buyPrice: int
@@ -31,7 +31,7 @@ class CommodityMessage:
     stationName: str
     marketId: int
     timestamp: str
-    commodities: List[Commodity]
+    commodities: List[CommodityEvent]
     stationType: Optional[str] = None
     # none, squadronfriends, friends, squadron, all
     carrierDockingAccess: Optional[str] = None
@@ -42,15 +42,15 @@ class CommodityMessage:
 
 
 @dataclass
-class CommodityEvent(EddnEvent):
+class CommoditiesEvent(EddnEvent):
     message: CommodityMessage
 
 
-class CommodityHandler(EventHandler[CommodityEvent]):
+class CommodityHandler(EventHandler[CommoditiesEvent]):
     def __init__(self):
         self._log = logging.getLogger(__name__)
 
-    def on_event(self, event: CommodityEvent):
+    def on_event(self, event: CommoditiesEvent):
         if event.message.carrierDockingAccess is None:
             return
 

@@ -2,10 +2,8 @@ import locale
 import logging
 import asyncio
 
-from scanner.event.commodity import CommodityHandler
-from scanner.event.docking import DockingHandler
-from scanner.event.signals import SignalDiscoveredHandler
-from scanner.scanner import EddnScanner
+from scanner.event.eddb_handler import LoggingEddnHandler
+from scanner.scanner2 import EddnScannerV2
 
 
 async def main():
@@ -26,10 +24,12 @@ async def main():
         handlers=[file_handler, stream_handler],
     )
 
-    scanner = EddnScanner()
-    scanner.add_docking_handler(DockingHandler())
-    scanner.add_signal_handler(SignalDiscoveredHandler())
-    scanner.add_commodity_handler(CommodityHandler())
+    scanner = EddnScannerV2(
+        LoggingEddnHandler(["https://eddn.edcd.io/schemas/commodity/3"])
+    )
+    # scanner.add_docking_handler(DockingHandler())
+    # scanner.add_signal_handler(SignalDiscoveredHandler())
+    # scanner.add_commodity_handler(CommodityHandler())
 
     await scanner.start()
 
