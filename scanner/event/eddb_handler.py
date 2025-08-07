@@ -42,11 +42,12 @@ class CommodityWriter:
         self.log.info(
             f"Updating commodities for {event.message.systemName}/{event.message.stationName}"
         )
-        _timestamp = datetime.fromisoformat(event.message.timestamp)
+        timestamp = datetime.fromisoformat(event.message.timestamp)
         command = AddCommodity(self.commodity_repository, self.market_repository)
         command.execute(
             AddCommodityRequest(
                 market_id=event.message.marketId,
+                timestamp=timestamp,
                 commodities=[
                     self.map_to_commodity(
                         c,

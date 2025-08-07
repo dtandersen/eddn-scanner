@@ -18,13 +18,21 @@ class MarketRepository(metaclass=ABCMeta):
     def all(self) -> List[Market]:
         pass
 
+    @abstractmethod
+    def get_market(self, market_id: int) -> Market:
+        pass
+
+    @abstractmethod
+    def update_timestamp(self, market_id: int, timestamp: datetime):
+        pass
+
 
 @dataclass
 class MarketRow:
     market_id: int
     system_address: int
     name: str
-    last_updated: datetime | None
+    last_update: datetime | None
 
 
 class PsycopgMarketRepository(MarketRepository):
@@ -53,7 +61,28 @@ class PsycopgMarketRepository(MarketRepository):
                     market_id=row.market_id,
                     system_address=row.system_address,
                     name=row.name,
-                    last_updated=row.last_updated,
+                    last_updated=row.last_update,
                 )
                 for row in rows
             ]
+
+    def get_market(self, market_id: int) -> Market:
+        with self.connection.cursor(row_factory=class_row(MarketRow)) as cursor:
+            cursor.execute("SELECT * FROM market WHERE market_id = %s", (market_id,))
+            row = cursor.fetchone()
+            if row is None:
+                raise ValueError(f"Market with ID {market_id} does not exist.")
+            return Market(
+                market_id=row.market_id,
+                system_address=row.system_address,
+                name=row.name,
+                last_updated=row.last_update,
+            )
+
+    def update_timestamp(self, market_id: int, timestamp: datetime):
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE market SET last_update = %s WHERE market_id = %s",
+                (timestamp, market_id),
+            )
+            self.connection.commit()

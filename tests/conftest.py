@@ -83,12 +83,19 @@ def database_config(request: pytest.FixtureRequest, postgres: PostgresContainer)
 
 
 @pytest.fixture()
-def connection(database_config: ConnectionConfig) -> psycopg.Connection:
+def connection(
+    request: pytest.FixtureRequest, database_config: ConnectionConfig
+) -> psycopg.Connection:
     connection = psycopg.connect(
         f"host={database_config.host} dbname={database_config.database} user={database_config.username} password={database_config.password} port={database_config.port}"
     )
 
     connection.execute("truncate system cascade")
+
+    def remove_container():
+        connection.close()
+
+    request.addfinalizer(remove_container)
 
     return connection
 
