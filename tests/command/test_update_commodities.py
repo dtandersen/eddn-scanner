@@ -4,11 +4,13 @@ import pytest
 from scanner.command.update_commodities import UpdateCommodities, AddCommodityRequest
 
 from scanner.entity.commodity import Commodity
+from scanner.entity.market import Market
 from scanner.entity.system import Point3D
 from scanner.repo.commodity_repository import (
     PsycopgCommodityRepository,
 )
 from scanner.repo.market_repository import PsycopgMarketRepository
+from scanner.repo.system_repository import SystemRepository
 from tests.facade import TestFacade
 
 
@@ -16,8 +18,9 @@ from tests.facade import TestFacade
 def command(
     commodity_repository: PsycopgCommodityRepository,
     market_repository: PsycopgMarketRepository,
+    system_repository: SystemRepository,
 ):
-    return UpdateCommodities(commodity_repository, market_repository)
+    return UpdateCommodities(commodity_repository, market_repository, system_repository)
 
 
 def test_commodity_is_added(
@@ -32,6 +35,8 @@ def test_commodity_is_added(
     timestamp = datetime.now()
     request = AddCommodityRequest(
         market_id=1,
+        station="Test Station",
+        system="Test System",
         timestamp=timestamp,
         commodities=[
             Commodity(
@@ -76,6 +81,8 @@ def test_multiple_commodities_added(
     timestamp = datetime.now()
     request = AddCommodityRequest(
         market_id=1,
+        station="Test Station",
+        system="Test System",
         timestamp=timestamp,
         commodities=[
             Commodity(
@@ -141,6 +148,8 @@ def test_previous_market_prices_are_overwritten(
     timestamp = datetime.now(tz=timezone.utc)
     request = AddCommodityRequest(
         market_id=1,
+        station="Test Station",
+        system="Test System",
         timestamp=timestamp,
         commodities=[
             Commodity(
@@ -175,14 +184,89 @@ def test_previous_market_prices_are_overwritten(
     assert_that(market.last_updated, equal_to(timestamp))
 
 
+def test_add_market_if_system_exists(
+    command: UpdateCommodities,
+    commodity_repository: PsycopgCommodityRepository,
+    market_repository: PsycopgMarketRepository,
+    test_facade: TestFacade,
+):
+    test_facade.given_system(address=1, name="System", position=Point3D(0, 0, 0))
+
+    timestamp = datetime.now(tz=timezone.utc)
+    request = AddCommodityRequest(
+        market_id=1,
+        station="Station",
+        system="System",
+        timestamp=timestamp,
+        commodities=[
+            Commodity(
+                market_id=1,
+                name="gold",
+                buy=90,
+                sell=110,
+                supply=1000,
+                demand=500,
+            ),
+        ],
+    )
+    command.execute(request)
+
+    assert_that(
+        market_repository.all(),
+        equal_to(
+            [
+                Market(
+                    market_id=1,
+                    name="Station",
+                    system_address=1,
+                    last_updated=timestamp,
+                ),
+            ]
+        ),
+    )
+
+    assert_that(
+        commodity_repository.all(),
+        equal_to(
+            [
+                Commodity(
+                    market_id=1,
+                    name="gold",
+                    buy=90,
+                    sell=110,
+                    supply=1000,
+                    demand=500,
+                ),
+            ]
+        ),
+    )
+
+    assert_that(
+        commodity_repository.all(),
+        equal_to(
+            [
+                Commodity(
+                    market_id=1,
+                    name="gold",
+                    buy=90,
+                    sell=110,
+                    supply=1000,
+                    demand=500,
+                ),
+            ]
+        ),
+    )
+
+
 def test_dont_add_commodities_if_market_doesnt_exist(
     command: UpdateCommodities,
     commodity_repository: PsycopgCommodityRepository,
 ):
-
     timestamp = datetime.now()
     request = AddCommodityRequest(
         market_id=1,
+        station="Unknown",
+        system="Unknown",
         timestamp=timestamp,
         commodities=[
             Commodity(

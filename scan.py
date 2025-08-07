@@ -10,6 +10,7 @@ from scanner.event.eddb_handler import CommodityEddnHandler, CommodityWriter
 from scanner.event.event_handler import EventBus
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
+from scanner.repo.system_repository import PsycopgSystemRepository
 from scanner.scanner2 import EddnScannerV2
 
 
@@ -46,7 +47,10 @@ async def main():
     bus = EventBus()
     connection = get_connection()
     _writer = CommodityWriter(
-        bus, PsycopgCommodityRepository(connection), PsycopgMarketRepository(connection)
+        bus,
+        PsycopgCommodityRepository(connection),
+        PsycopgMarketRepository(connection),
+        PsycopgSystemRepository(connection),
     )
     scanner = EddnScannerV2(CommodityEddnHandler(bus))
     # scanner.add_docking_handler(DockingHandler())

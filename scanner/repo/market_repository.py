@@ -58,12 +58,12 @@ class PsycopgMarketRepository(MarketRepository):
 
     def all(self) -> List[Market]:
         with self.connection.cursor(row_factory=class_row(MarketRow)) as cursor:
-            cursor.execute("SELECT * FROM commodity")
+            cursor.execute("SELECT * FROM market")
             rows = cursor.fetchall()
             return [
                 Market(
-                    market_id=row.market_id,
-                    system_address=row.system_address,
+                    market_id=int(row.market_id),
+                    system_address=int(row.system_address),
                     name=row.name,
                     last_updated=row.last_update,
                 )

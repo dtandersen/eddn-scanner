@@ -5,6 +5,7 @@ from typing import List
 from psycopg import Connection
 from psycopg.rows import class_row
 from scanner.entity.system import Point3D, System
+from scanner.repo.market_repository import ResourceNotFoundError
 
 
 class SystemRepository(metaclass=ABCMeta):
@@ -14,6 +15,10 @@ class SystemRepository(metaclass=ABCMeta):
 
     @abstractmethod
     def all(self) -> List[System]:
+        pass
+
+    @abstractmethod
+    def get_system_by_name(self, name: str) -> System:
         pass
 
 
@@ -56,3 +61,15 @@ class PsycopgSystemRepository(SystemRepository):
                 )
                 for row in rows
             ]
+
+    def get_system_by_name(self, name: str) -> System:
+        with self.connection.cursor(row_factory=class_row(SystemRow)) as cursor:
+            cursor.execute("SELECT * FROM system WHERE name = %s", (name,))
+            row = cursor.fetchone()
+            if not row:
+                raise ResourceNotFoundError(f"System '{name}' not found")
+            return System(
+                address=row.address,
+                name=row.name,
+                position=Point3D(x=row.x, y=row.y, z=row.z),
+            )

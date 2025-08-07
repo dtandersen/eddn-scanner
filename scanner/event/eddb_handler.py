@@ -13,6 +13,7 @@ from scanner.event.commodity import CommoditiesEvent, CommodityEvent
 from scanner.event.event_handler import EventBus
 from scanner.repo.commodity_repository import CommodityRepository
 from scanner.repo.market_repository import MarketRepository
+from scanner.repo.system_repository import SystemRepository
 
 # import scanner
 
@@ -33,20 +34,26 @@ class CommodityWriter:
         events: EventBus,
         commodity_repository: CommodityRepository,
         market_repository: MarketRepository,
+        system_repository: SystemRepository,
     ):
         events.commodities.add_delegate(self.on_commodities)
         self.commodity_repository = commodity_repository
         self.market_repository = market_repository
+        self.system_repository = system_repository
 
     def on_commodities(self, event: CommoditiesEvent):
         self.log.info(
             f"Updating commodities for {event.message.systemName}/{event.message.stationName}"
         )
         timestamp = datetime.fromisoformat(event.message.timestamp)
-        command = UpdateCommodities(self.commodity_repository, self.market_repository)
+        command = UpdateCommodities(
+            self.commodity_repository, self.market_repository, self.system_repository
+        )
         command.execute(
             AddCommodityRequest(
                 market_id=event.message.marketId,
+                station=event.message.stationName,
+                system=event.message.systemName,
                 timestamp=timestamp,
                 commodities=[
                     self.map_to_commodity(
