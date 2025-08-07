@@ -29,6 +29,6 @@ class DockingHandler(EventHandler[DockingEvent]):
         if event.message.StationType != "FleetCarrier":
             return
 
-        self._log.info(
-            f"Docked at {event.message.StationName} on pad {event.message.LandingPad}"
-        )
+        # self._log.info(
+        #     f"Docked at {event.message.StationName} on pad {event.message.LandingPad}"
+        # )

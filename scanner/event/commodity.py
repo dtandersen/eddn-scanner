@@ -62,10 +62,13 @@ class CommodityHandler(EventHandler[CommodityEvent]):
         ]:
             return
 
+        ban_list = ["thargoidtitandrivecomponent"]
         buying_commodities = [
             commodity
             for commodity in event.message.commodities
-            if commodity.sellPrice > 0 and commodity.demand > 0
+            if commodity.sellPrice > 0
+            and commodity.demand > 0
+            and commodity.name not in ban_list
         ]
         if len(buying_commodities) == 0:
             # self._log.info("No commodities available for sale.")
