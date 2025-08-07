@@ -25,11 +25,16 @@ class EddnHandler(metaclass=ABCMeta):
 
 
 class CommodityWriter:
+    log = logging.getLogger(__name__)
+
     def __init__(self, events: EventBus, commodity_repository: CommodityRepository):
         events.commodities.add_delegate(self.on_commodities)
         self.commodity_repository = commodity_repository
 
     def on_commodities(self, event: CommoditiesEvent):
+        self.log.info(
+            f"Updating commodities for {event.message.systemName}/{event.message.stationName}"
+        )
         timestamp = datetime.fromisoformat(event.message.timestamp)
         command = AddCommodity(self.commodity_repository)
         command.execute(

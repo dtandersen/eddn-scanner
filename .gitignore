@@ -10,3 +10,4 @@ wheels/
 .venv
 scanner.log
 yoyo.ini
+.env
