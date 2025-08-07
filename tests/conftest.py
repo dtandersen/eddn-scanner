@@ -9,7 +9,7 @@ from testcontainers.postgres import PostgresContainer  # type: ignore
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
-from tests.facade import Facade  # type: ignore
+from tests.facade import TestFacade  # type: ignore
 
 
 def pytest_addoption(parser: pytest.Parser):
@@ -34,7 +34,8 @@ def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item
 
 @pytest.fixture(scope="session")
 def postgres():
-    return PostgresContainer("postgres:16-alpine")
+    container = PostgresContainer("postgres:17-alpine")
+    return container
 
 
 @dataclass
@@ -108,12 +109,12 @@ def market_repository(connection: psycopg.Connection):
 
 
 @pytest.fixture
-def facade(
+def test_facade(
     system_repository: PsycopgSystemRepository,
     market_repository: PsycopgMarketRepository,
     commodity_repository: PsycopgCommodityRepository,
 ):
-    return Facade(
+    return TestFacade(
         system_repository=system_repository,
         market_repository=market_repository,
         commodity_repository=commodity_repository,

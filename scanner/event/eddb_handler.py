@@ -12,6 +12,7 @@ from scanner.entity.commodity import Commodity
 from scanner.event.commodity import CommoditiesEvent, CommodityEvent
 from scanner.event.event_handler import EventBus
 from scanner.repo.commodity_repository import CommodityRepository
+from scanner.repo.market_repository import MarketRepository
 
 # import scanner
 
@@ -27,33 +28,36 @@ class EddnHandler(metaclass=ABCMeta):
 class CommodityWriter:
     log = logging.getLogger(__name__)
 
-    def __init__(self, events: EventBus, commodity_repository: CommodityRepository):
+    def __init__(
+        self,
+        events: EventBus,
+        commodity_repository: CommodityRepository,
+        market_repository: MarketRepository,
+    ):
         events.commodities.add_delegate(self.on_commodities)
         self.commodity_repository = commodity_repository
+        self.market_repository = market_repository
 
     def on_commodities(self, event: CommoditiesEvent):
         self.log.info(
             f"Updating commodities for {event.message.systemName}/{event.message.stationName}"
         )
         _timestamp = datetime.fromisoformat(event.message.timestamp)
-        command = AddCommodity(self.commodity_repository)
+        command = AddCommodity(self.commodity_repository, self.market_repository)
         command.execute(
             AddCommodityRequest(
+                market_id=event.message.marketId,
                 commodities=[
                     self.map_to_commodity(
                         c,
                         event.message.marketId,
                     )
                     for c in event.message.commodities
-                ]
+                ],
             )
         )
 
     def map_to_commodity(self, event: CommodityEvent, market_id: int) -> Commodity:
-        # convert iso timestamp to datetime
-        # if isinstance(event.header.timestamp, str):
-        #     timestamp = datetime.fromisoformat(event.header.timestamp)
-        # timestamp: datetime = event.header.timestamp
         return Commodity(
             market_id=market_id,
             name=event.name,

@@ -1,7 +1,9 @@
 from abc import ABCMeta, abstractmethod
-from typing import Final, List
+from dataclasses import dataclass
+from typing import List
 
 from psycopg import Connection
+from psycopg.rows import class_row
 
 from scanner.entity.commodity import Commodity
 
@@ -14,6 +16,20 @@ class CommodityRepository(metaclass=ABCMeta):
     @abstractmethod
     def all(self) -> List[Commodity]:
         pass
+
+    @abstractmethod
+    def delete_market(self, market_id: int):
+        pass
+
+
+@dataclass
+class CommodityRow:
+    market_id: int
+    name: str
+    buy: int
+    sell: int
+    supply: int
+    demand: int
 
 
 class PsycopgCommodityRepository(CommodityRepository):
@@ -36,28 +52,22 @@ class PsycopgCommodityRepository(CommodityRepository):
             self.connection.commit()
 
     def all(self) -> List[Commodity]:
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor(row_factory=class_row(CommodityRow)) as cursor:
             cursor.execute("SELECT * FROM commodity")
             rows = cursor.fetchall()
             return [
                 Commodity(
-                    market_id=row[0],
-                    name=row[1],
-                    buy=row[2],
-                    sell=row[3],
-                    demand=row[4],
-                    supply=row[5],
+                    market_id=row.market_id,
+                    name=row.name,
+                    buy=row.buy,
+                    sell=row.sell,
+                    demand=row.demand,
+                    supply=row.supply,
                 )
                 for row in rows
             ]
 
-
-class InMemoryCommodityRepository(CommodityRepository):
-    def __init__(self):
-        self.commodities: Final[List[Commodity]] = []
-
-    def create(self, commodity: Commodity):
-        self.commodities.append(commodity)
-
-    def all(self):
-        return self.commodities
+    def delete_market(self, market_id: int):
+        with self.connection.cursor() as cursor:
+            cursor.execute("DELETE FROM commodity WHERE market_id = %s", (market_id,))
+            self.connection.commit()

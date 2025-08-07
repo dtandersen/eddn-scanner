@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 
-@dataclass
+@dataclass(frozen=True)
 class Market:
     market_id: int
     system_address: int

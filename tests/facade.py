@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Any
+from scanner.entity.commodity import Commodity
 from scanner.entity.market import Market
 from scanner.entity.system import Point3D, System
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
@@ -6,7 +8,13 @@ from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
 
 
-class Facade:
+def nottest(obj: Any):
+    obj.__test__ = False
+    return obj
+
+
+@nottest
+class TestFacade:
     def __init__(
         self,
         system_repository: PsycopgSystemRepository,
@@ -36,5 +44,21 @@ class Facade:
         )
         self.market_repository.create(market)
 
-    # def given_commodity(self, commodity: Commodity):
-    #     self.commodity_repository.create(commodity)
+    def given_commodity(
+        self,
+        market_id: int,
+        name: str,
+        buy: int = 0,
+        sell: int = 0,
+        supply: int = 0,
+        demand: int = 0,
+    ):
+        commodity = Commodity(
+            market_id=market_id,
+            name=name,
+            buy=buy,
+            sell=sell,
+            supply=supply,
+            demand=demand,
+        )
+        self.commodity_repository.create(commodity)

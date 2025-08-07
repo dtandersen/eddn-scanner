@@ -1,8 +1,9 @@
 from abc import ABCMeta, abstractmethod
+from dataclasses import dataclass
 from typing import List
 
 from psycopg import Connection
-
+from psycopg.rows import class_row
 from scanner.entity.system import Point3D, System
 
 
@@ -14,6 +15,15 @@ class SystemRepository(metaclass=ABCMeta):
     @abstractmethod
     def all(self) -> List[System]:
         pass
+
+
+@dataclass
+class SystemRow:
+    address: int
+    name: str
+    x: float
+    y: float
+    z: float
 
 
 class PsycopgSystemRepository(SystemRepository):
@@ -35,14 +45,14 @@ class PsycopgSystemRepository(SystemRepository):
             self.connection.commit()
 
     def all(self) -> List[System]:
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor(row_factory=class_row(SystemRow)) as cursor:
             cursor.execute("SELECT * FROM system")
             rows = cursor.fetchall()
             return [
                 System(
-                    address=row[0],
-                    name=row[1],
-                    position=Point3D(x=row[2], y=row[3], z=row[4]),
+                    address=row.address,
+                    name=row.name,
+                    position=Point3D(x=row.x, y=row.y, z=row.z),
                 )
                 for row in rows
             ]

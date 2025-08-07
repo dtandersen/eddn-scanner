@@ -1,16 +1,15 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class Point3D:
     x: float
     y: float
     z: float
 
 
-@dataclass
+@dataclass(frozen=True)
 class System:
     address: int
     name: str
     position: Point3D
-    # market_timestamp: datetime

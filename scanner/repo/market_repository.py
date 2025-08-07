@@ -1,7 +1,10 @@
 from abc import ABCMeta, abstractmethod
+from dataclasses import dataclass
+from datetime import datetime
 from typing import List
 
 from psycopg import Connection
+from psycopg.rows import class_row
 
 from scanner.entity.market import Market
 
@@ -14,6 +17,14 @@ class MarketRepository(metaclass=ABCMeta):
     @abstractmethod
     def all(self) -> List[Market]:
         pass
+
+
+@dataclass
+class MarketRow:
+    market_id: int
+    system_address: int
+    name: str
+    last_updated: datetime | None
 
 
 class PsycopgMarketRepository(MarketRepository):
@@ -34,16 +45,15 @@ class PsycopgMarketRepository(MarketRepository):
             self.connection.commit()
 
     def all(self) -> List[Market]:
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor(row_factory=class_row(MarketRow)) as cursor:
             cursor.execute("SELECT * FROM commodity")
             rows = cursor.fetchall()
             return [
                 Market(
-                    market_id=row[0],
-                    system_address=row[1],
-                    name=row[2],
-                    last_updated=row[3],
-                    # market_timestamp=row[5],
+                    market_id=row.market_id,
+                    system_address=row.system_address,
+                    name=row.name,
+                    last_updated=row.last_updated,
                 )
                 for row in rows
             ]

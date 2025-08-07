@@ -40,7 +40,7 @@ def test_handles_commodities_event(
         )
     )
     bus = EventBus()
-    _writer = CommodityWriter(bus, commodity_repository)
+    _writer = CommodityWriter(bus, commodity_repository, market_repository)
     events = CommodityEddnHandler(bus)
     events.handle(
         {
