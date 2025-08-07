@@ -25,7 +25,12 @@ async def main():
     )
 
     scanner = EddnScannerV2(
-        LoggingEddnHandler(["https://eddn.edcd.io/schemas/commodity/3"])
+        LoggingEddnHandler(
+            # [
+            #     # "https://eddn.edcd.io/schemas/commodity/3",
+            #     "https://eddn.edcd.io/schemas/fssdiscoveryscan/1",
+            # ]
+        )
     )
     # scanner.add_docking_handler(DockingHandler())
     # scanner.add_signal_handler(SignalDiscoveredHandler())

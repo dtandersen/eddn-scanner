@@ -1,0 +1,10 @@
+from dataclasses import dataclass
+from datetime import datetime
+
+
+@dataclass
+class Market:
+    market_id: int
+    system_address: int
+    name: str
+    last_updated: datetime | None

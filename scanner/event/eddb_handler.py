@@ -35,38 +35,32 @@ class CommodityWriter:
         self.log.info(
             f"Updating commodities for {event.message.systemName}/{event.message.stationName}"
         )
-        timestamp = datetime.fromisoformat(event.message.timestamp)
+        _timestamp = datetime.fromisoformat(event.message.timestamp)
         command = AddCommodity(self.commodity_repository)
         command.execute(
             AddCommodityRequest(
                 commodities=[
                     self.map_to_commodity(
                         c,
-                        event.message.stationName,
-                        event.message.systemName,
-                        timestamp,
+                        event.message.marketId,
                     )
                     for c in event.message.commodities
                 ]
             )
         )
 
-    def map_to_commodity(
-        self, event: CommodityEvent, station: str, system: str, timestamp: datetime
-    ) -> Commodity:
+    def map_to_commodity(self, event: CommodityEvent, market_id: int) -> Commodity:
         # convert iso timestamp to datetime
         # if isinstance(event.header.timestamp, str):
         #     timestamp = datetime.fromisoformat(event.header.timestamp)
         # timestamp: datetime = event.header.timestamp
         return Commodity(
-            timestamp=timestamp,
+            market_id=market_id,
             name=event.name,
             buy=event.buyPrice,
             sell=event.sellPrice,
             supply=event.stock,
             demand=event.demand,
-            station=station,
-            system=system,
         )
 
 

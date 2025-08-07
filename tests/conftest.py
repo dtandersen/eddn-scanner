@@ -1,5 +1,15 @@
+from dataclasses import dataclass
 from typing import List
+import psycopg
 import pytest
+from yoyo import get_backend, read_migrations  # type: ignore
+import os
+from testcontainers.postgres import PostgresContainer  # type: ignore
+
+from scanner.repo.commodity_repository import PsycopgCommodityRepository
+from scanner.repo.market_repository import PsycopgMarketRepository
+from scanner.repo.system_repository import PsycopgSystemRepository
+from tests.facade import Facade  # type: ignore
 
 
 def pytest_addoption(parser: pytest.Parser):
@@ -20,3 +30,91 @@ def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item
     for item in items:
         if "slow" in item.keywords:
             item.add_marker(skip_slow)
+
+
+@pytest.fixture(scope="session")
+def postgres():
+    return PostgresContainer("postgres:16-alpine")
+
+
+@dataclass
+class ConnectionConfig:
+    host: str
+    port: str
+    username: str
+    password: str
+    database: str
+
+
+@pytest.fixture(scope="session")
+def database_config(request: pytest.FixtureRequest, postgres: PostgresContainer):
+    postgres.start()
+
+    def remove_container():
+        postgres.stop()
+
+    request.addfinalizer(remove_container)
+    os.environ["DB_CONN"] = postgres.get_connection_url()
+    os.environ["DB_HOST"] = postgres.get_container_host_ip()
+    os.environ["DB_PORT"] = str(postgres.get_exposed_port(5432))
+    os.environ["DB_USERNAME"] = postgres.username
+    os.environ["DB_PASSWORD"] = postgres.password
+    os.environ["DB_NAME"] = postgres.dbname
+
+    host = os.getenv("DB_HOST", "localhost")
+    port = os.getenv("DB_PORT", "5555")
+    username = os.getenv("DB_USERNAME", "postgres")
+    password = os.getenv("DB_PASSWORD", "postgres")
+    database = os.getenv("DB_NAME", "scanner-dev")
+
+    backend = get_backend(
+        f"postgresql+psycopg://{username}:{password}@{host}:{port}/{database}"
+    )
+    migrations = read_migrations("migrations")
+
+    with backend.lock():
+        backend.apply_migrations(backend.to_apply(migrations))
+        backend.rollback_migrations(backend.to_rollback(migrations))
+
+    return ConnectionConfig(
+        host=host, port=port, username=username, password=password, database=database
+    )
+
+
+@pytest.fixture()
+def connection(database_config: ConnectionConfig) -> psycopg.Connection:
+    connection = psycopg.connect(
+        f"host={database_config.host} dbname={database_config.database} user={database_config.username} password={database_config.password} port={database_config.port}"
+    )
+
+    connection.execute("truncate system cascade")
+
+    return connection
+
+
+@pytest.fixture
+def commodity_repository(connection: psycopg.Connection):
+    return PsycopgCommodityRepository(connection)
+
+
+@pytest.fixture
+def system_repository(connection: psycopg.Connection):
+    return PsycopgSystemRepository(connection)
+
+
+@pytest.fixture
+def market_repository(connection: psycopg.Connection):
+    return PsycopgMarketRepository(connection)
+
+
+@pytest.fixture
+def facade(
+    system_repository: PsycopgSystemRepository,
+    market_repository: PsycopgMarketRepository,
+    commodity_repository: PsycopgCommodityRepository,
+):
+    return Facade(
+        system_repository=system_repository,
+        market_repository=market_repository,
+        commodity_repository=commodity_repository,
+    )

@@ -1,83 +1,80 @@
-from datetime import datetime, timezone
 from hamcrest import assert_that, equal_to
-import psycopg
-import pytest
-from yoyo import get_backend, read_migrations  # type: ignore
 from scanner.entity.commodity import Commodity
-from scanner.repo.commodity_repository import PsycogCommodityRepository
-import os
-from testcontainers.postgres import PostgresContainer  # type: ignore
+from scanner.entity.market import Market
+from scanner.entity.system import Point3D, System
+from scanner.repo.commodity_repository import PsycopgCommodityRepository
+from scanner.repo.market_repository import PsycopgMarketRepository
+from scanner.repo.system_repository import PsycopgSystemRepository
 
 # import pytest
 
-postgres = PostgresContainer("postgres:16-alpine")
+# postgres = PostgresContainer("postgres:16-alpine")
 
 
-def get_connection():
-    host = os.getenv("DB_HOST", "localhost")
-    port = os.getenv("DB_PORT", "5432")
-    username = os.getenv("DB_USERNAME", "postgres")
-    password = os.getenv("DB_PASSWORD", "postgres")
-    database = os.getenv("DB_NAME", "scanner-dev")
+# def get_connection():
+#     host = os.getenv("DB_HOST", "localhost")
+#     port = os.getenv("DB_PORT", "5432")
+#     username = os.getenv("DB_USERNAME", "postgres")
+#     password = os.getenv("DB_PASSWORD", "postgres")
+#     database = os.getenv("DB_NAME", "scanner-dev")
 
-    return psycopg.connect(
-        f"host={host} dbname={database} user={username} password={password} port={port}"
-    )
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup(request: pytest.FixtureRequest):
-    postgres.start()
-
-    def remove_container():
-        postgres.stop()
-
-    request.addfinalizer(remove_container)
-    os.environ["DB_CONN"] = postgres.get_connection_url()
-    os.environ["DB_HOST"] = postgres.get_container_host_ip()
-    os.environ["DB_PORT"] = str(postgres.get_exposed_port(5432))
-    os.environ["DB_USERNAME"] = postgres.username
-    os.environ["DB_PASSWORD"] = postgres.password
-    os.environ["DB_NAME"] = postgres.dbname
-    # customers.create_table()
+#     return psycopg.connect(
+#         f"host={host} dbname={database} user={username} password={password} port={port}"
+#     )
 
 
-@pytest.fixture
-def commodity_repository():
-    host = os.getenv("DB_HOST", "localhost")
-    port = os.getenv("DB_PORT", "5432")
-    username = os.getenv("DB_USERNAME", "postgres")
-    password = os.getenv("DB_PASSWORD", "postgres")
-    database = os.getenv("DB_NAME", "postgres")
-    backend = get_backend(
-        f"postgresql+psycopg://{username}:{password}@{host}:{port}/{database}"
-    )
-    migrations = read_migrations("migrations")
+# @pytest.fixture(scope="session", autouse=True)
+# def setup(request: pytest.FixtureRequest):
+#     postgres.start()
 
-    with backend.lock():
+#     def remove_container():
+#         postgres.stop()
 
-        # Apply any outstanding migrations
-        backend.apply_migrations(backend.to_apply(migrations))
-
-        # Rollback all migrations
-        backend.rollback_migrations(backend.to_rollback(migrations))
-    return PsycogCommodityRepository(get_connection())
+#     request.addfinalizer(remove_container)
+#     os.environ["DB_CONN"] = postgres.get_connection_url()
+#     os.environ["DB_HOST"] = postgres.get_container_host_ip()
+#     os.environ["DB_PORT"] = str(postgres.get_exposed_port(5432))
+#     os.environ["DB_USERNAME"] = postgres.username
+#     os.environ["DB_PASSWORD"] = postgres.password
+#     os.environ["DB_NAME"] = postgres.dbname
+#     # customers.create_table()
 
 
-@pytest.mark.slow
+# @pytest.fixture
+# def commodity_repository(connection: psycopg.Connection):
+#     return PsycogCommodityRepository(connection)
+
+
+# @pytest.fixture
+# def system_repository(connection: psycopg.Connection):
+#     return PsycopgSystemRepository(connection)
+
+
+# @pytest.fixture
+# def market_repository(connection: psycopg.Connection):
+#     return PsycopgMarketRepository(connection)
+
+
+# @pytest.mark.slow
 def test_creates_commodity_in_repository(
-    commodity_repository: PsycogCommodityRepository,
+    commodity_repository: PsycopgCommodityRepository,
+    system_repository: PsycopgSystemRepository,
+    market_repository: PsycopgMarketRepository,
 ):
-    timestamp = datetime(2025, 8, 6, 22, 53, 24, 648057, tzinfo=timezone.utc)
+    system_repository.create(
+        System(address=1, name="system", position=Point3D(0, 0, 0))
+    )
+    market_repository.create(
+        Market(system_address=1, market_id=1, name="station", last_updated=None)
+    )
+
     commodity = Commodity(
-        timestamp=timestamp,
+        market_id=1,
         name="gold",
         buy=90,
         sell=110,
         supply=1000,
         demand=500,
-        station="station",
-        system="system",
     )
     commodity_repository.create(commodity)
 

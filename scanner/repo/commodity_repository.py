@@ -16,23 +16,21 @@ class CommodityRepository(metaclass=ABCMeta):
         pass
 
 
-class PsycogCommodityRepository(CommodityRepository):
+class PsycopgCommodityRepository(CommodityRepository):
     def __init__(self, connection: Connection):
         self.connection = connection
 
     def create(self, commodity: Commodity):
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO commodity (timestamp, name, buy, sell, supply, demand, station, system) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                "INSERT INTO commodity (market_id, name, buy, sell, supply, demand) VALUES (%s, %s, %s, %s, %s, %s)",
                 (
-                    commodity.timestamp,
+                    commodity.market_id,
                     commodity.name,
                     commodity.buy,
                     commodity.sell,
                     commodity.supply,
                     commodity.demand,
-                    commodity.station,
-                    commodity.system,
                 ),
             )
             self.connection.commit()
@@ -43,14 +41,12 @@ class PsycogCommodityRepository(CommodityRepository):
             rows = cursor.fetchall()
             return [
                 Commodity(
-                    timestamp=row[0],
-                    station=row[1],
-                    system=row[2],
-                    name=row[3],
-                    buy=row[4],
-                    sell=row[5],
-                    demand=row[6],
-                    supply=row[7],
+                    market_id=row[0],
+                    name=row[1],
+                    buy=row[2],
+                    sell=row[3],
+                    demand=row[4],
+                    supply=row[5],
                 )
                 for row in rows
             ]
