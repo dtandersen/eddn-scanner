@@ -7,7 +7,7 @@ from typing import Any, Dict
 from dacite import Config, from_dict
 
 # from scanner import scanner
-from scanner.command.add_commodity import AddCommodity, AddCommodityRequest
+from scanner.command.update_commodities import UpdateCommodities, AddCommodityRequest
 from scanner.entity.commodity import Commodity
 from scanner.event.commodity import CommoditiesEvent, CommodityEvent
 from scanner.event.event_handler import EventBus
@@ -43,7 +43,7 @@ class CommodityWriter:
             f"Updating commodities for {event.message.systemName}/{event.message.stationName}"
         )
         timestamp = datetime.fromisoformat(event.message.timestamp)
-        command = AddCommodity(self.commodity_repository, self.market_repository)
+        command = UpdateCommodities(self.commodity_repository, self.market_repository)
         command.execute(
             AddCommodityRequest(
                 market_id=event.message.marketId,

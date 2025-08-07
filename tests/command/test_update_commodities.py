@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from hamcrest import assert_that, equal_to
 import pytest
-from scanner.command.add_commodity import AddCommodity, AddCommodityRequest
+from scanner.command.update_commodities import UpdateCommodities, AddCommodityRequest
 
 from scanner.entity.commodity import Commodity
 from scanner.entity.system import Point3D
@@ -17,11 +17,11 @@ def command(
     commodity_repository: PsycopgCommodityRepository,
     market_repository: PsycopgMarketRepository,
 ):
-    return AddCommodity(commodity_repository, market_repository)
+    return UpdateCommodities(commodity_repository, market_repository)
 
 
 def test_commodity_is_added(
-    command: AddCommodity,
+    command: UpdateCommodities,
     commodity_repository: PsycopgCommodityRepository,
     test_facade: TestFacade,
 ):
@@ -64,7 +64,7 @@ def test_commodity_is_added(
 
 
 def test_multiple_commodities_added(
-    command: AddCommodity,
+    command: UpdateCommodities,
     commodity_repository: PsycopgCommodityRepository,
     test_facade: TestFacade,
 ):
@@ -124,7 +124,7 @@ def test_multiple_commodities_added(
 
 
 def test_previous_market_prices_are_overwritten(
-    command: AddCommodity,
+    command: UpdateCommodities,
     commodity_repository: PsycopgCommodityRepository,
     market_repository: PsycopgMarketRepository,
     test_facade: TestFacade,
@@ -173,3 +173,31 @@ def test_previous_market_prices_are_overwritten(
 
     market = market_repository.get_market(1)
     assert_that(market.last_updated, equal_to(timestamp))
+
+
+def test_dont_add_commodities_if_market_doesnt_exist(
+    command: UpdateCommodities,
+    commodity_repository: PsycopgCommodityRepository,
+):
+
+    timestamp = datetime.now()
+    request = AddCommodityRequest(
+        market_id=1,
+        timestamp=timestamp,
+        commodities=[
+            Commodity(
+                market_id=1,
+                name="gold",
+                buy=90,
+                sell=110,
+                supply=1000,
+                demand=500,
+            ),
+        ],
+    )
+    command.execute(request)
+
+    assert_that(
+        commodity_repository.all(),
+        equal_to([]),
+    )

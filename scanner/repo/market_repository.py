@@ -35,6 +35,10 @@ class MarketRow:
     last_update: datetime | None
 
 
+class ResourceNotFoundError(Exception):
+    pass
+
+
 class PsycopgMarketRepository(MarketRepository):
     def __init__(self, connection: Connection):
         self.connection = connection
@@ -71,7 +75,7 @@ class PsycopgMarketRepository(MarketRepository):
             cursor.execute("SELECT * FROM market WHERE market_id = %s", (market_id,))
             row = cursor.fetchone()
             if row is None:
-                raise ValueError(f"Market with ID {market_id} does not exist.")
+                raise ResourceNotFoundError(f"Market {market_id} not found")
             return Market(
                 market_id=row.market_id,
                 system_address=row.system_address,
