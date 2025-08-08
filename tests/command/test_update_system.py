@@ -1,7 +1,7 @@
 from hamcrest import assert_that, equal_to
 import pytest
 
-from scanner.command.update_market import UpdateSystem, UpdateSystemRequest
+from scanner.command.update_system import UpdateSystem, UpdateSystemRequest
 from scanner.entity.system import Point3D, System
 from scanner.repo.system_repository import SystemRepository
 from tests.facade import TestFacade

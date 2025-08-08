@@ -26,6 +26,7 @@ class UpdateSystem:
         try:
             self.system_repository.get_system_by_name(request.name)
         except ResourceNotFoundError:
+            self.log.info(f"Discovered new system: {request.name}")
             self.system_repository.create(
                 System(
                     address=request.address,

@@ -6,10 +6,14 @@ from typing import Any, Dict
 
 from dacite import Config, from_dict
 
+
 # from scanner import scanner
 from scanner.command.update_commodities import UpdateCommodities, AddCommodityRequest
+from scanner.command.update_system import UpdateSystem, UpdateSystemRequest
 from scanner.entity.commodity import Commodity
+from scanner.entity.system import Point3D
 from scanner.event.commodity import CommoditiesEvent, CommodityEvent
+from scanner.event.discovery import DiscoveryEvent
 from scanner.event.event_handler import EventBus
 from scanner.repo.commodity_repository import CommodityRepository
 from scanner.repo.market_repository import MarketRepository
@@ -37,14 +41,13 @@ class CommodityWriter:
         system_repository: SystemRepository,
     ):
         events.commodities.add_delegate(self.on_commodities)
+        events.discovery.add_delegate(self.on_discovery)
+
         self.commodity_repository = commodity_repository
         self.market_repository = market_repository
         self.system_repository = system_repository
 
     def on_commodities(self, event: CommoditiesEvent):
-        self.log.info(
-            f"Updating commodities for {event.message.systemName}/{event.message.stationName}"
-        )
         timestamp = datetime.fromisoformat(event.message.timestamp)
         command = UpdateCommodities(
             self.commodity_repository, self.market_repository, self.system_repository
@@ -62,6 +65,20 @@ class CommodityWriter:
                     )
                     for c in event.message.commodities
                 ],
+            )
+        )
+
+    def on_discovery(self, event: DiscoveryEvent):
+        command = UpdateSystem(self.system_repository)
+        command.execute(
+            UpdateSystemRequest(
+                address=event.message.SystemAddress,
+                name=event.message.SystemName,
+                position=Point3D(
+                    event.message.StarPos[0],
+                    event.message.StarPos[1],
+                    event.message.StarPos[2],
+                ),
             )
         )
 
@@ -83,12 +100,19 @@ class CommodityEddnHandler(EddnHandler):
     def handle(self, event: EddnEvent):
         schema = event.get("$schemaRef")
         if schema == "https://eddn.edcd.io/schemas/commodity/3":
-            commodity_event = from_dict(
+            discovery_event = from_dict(
                 data_class=CommoditiesEvent,
                 data=event,
                 config=Config(strict=False, convert_key=fix_schema_ref),
             )
-            self.event_bus.commodities.publish(commodity_event)
+            self.event_bus.commodities.publish(discovery_event)
+        elif schema == "https://eddn.edcd.io/schemas/fssdiscoveryscan/1":
+            discovery_event = from_dict(
+                data_class=DiscoveryEvent,
+                data=event,
+                config=Config(strict=False, convert_key=fix_schema_ref),
+            )
+            self.event_bus.discovery.publish(discovery_event)
 
 
 class LoggingEddnHandler(EddnHandler):

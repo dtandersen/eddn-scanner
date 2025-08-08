@@ -69,7 +69,7 @@ class PsycopgSystemRepository(SystemRepository):
             if not row:
                 raise ResourceNotFoundError(f"System '{name}' not found")
             return System(
-                address=row.address,
+                address=int(row.address),
                 name=row.name,
-                position=Point3D(x=row.x, y=row.y, z=row.z),
+                position=Point3D(x=float(row.x), y=float(row.y), z=float(row.z)),
             )

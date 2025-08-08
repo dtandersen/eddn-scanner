@@ -1,6 +1,7 @@
 from typing import Callable, Final, Generic, List, TypeVar
 
 from scanner.event.commodity import CommoditiesEvent
+from scanner.event.discovery import DiscoveryEvent
 
 
 T = TypeVar("T")
@@ -34,3 +35,4 @@ class Delegates(Generic[T]):
 class EventBus:
     def __init__(self):
         self.commodities: Final = Delegates[CommoditiesEvent]()
+        self.discovery: Final = Delegates[DiscoveryEvent]()

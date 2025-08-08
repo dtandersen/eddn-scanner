@@ -31,6 +31,7 @@ class UpdateCommodities:
         self.system_repository = system_repository
 
     def execute(self, request: AddCommodityRequest):
+        self.log.info(f"Updating commodities for {request.system}/{request.station}")
         try:
             _market = self.market_repository.get_market(request.market_id)
         except ResourceNotFoundError as _e:

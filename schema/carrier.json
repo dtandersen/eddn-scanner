@@ -1,0 +1,380 @@
+{
+    "$schemaRef": "https://eddn.edcd.io/schemas/commodity/3",
+    "header": {
+        "gamebuild": "r316268/r0 ",
+        "gameversion": "4.1.3.0",
+        "gatewayTimestamp": "2025-08-08T03:18:59.842250Z",
+        "softwareName": "EDDLite",
+        "softwareVersion": "3.3.0.0",
+        "uploaderID": "c42bd78ad7c771ae21a9700e33b562735f684e57"
+    },
+    "message": {
+        "carrierDockingAccess": "all",
+        "commodities": [
+            {
+                "buyPrice": 50995,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "gold",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 41158,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "silver",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 81797,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "bertrandite",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 18606,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "indite",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 760,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "water",
+                "sellPrice": 270,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 1728,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "titanium",
+                "sellPrice": 4622,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 240,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "copper",
+                "sellPrice": 655,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 500,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "aluminium",
+                "sellPrice": 2640,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 50,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "fruitandvegetables",
+                "sellPrice": 498,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 100,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "foodcartridges",
+                "sellPrice": 262,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 510,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "polymers",
+                "sellPrice": 316,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 65,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "semiconductors",
+                "sellPrice": 1084,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 100,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "superconductors",
+                "sellPrice": 6551,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 489,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "basicmedicines",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 20,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "powergenerators",
+                "sellPrice": 2388,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 35,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "waterpurifiers",
+                "sellPrice": 447,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 65,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "computercomponents",
+                "sellPrice": 708,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 1915,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "robotics",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 13,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "nonlethalweapons",
+                "sellPrice": 1848,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 3392,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "combatstabilisers",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 550,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "ceramiccomposites",
+                "sellPrice": 417,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 1830,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "geologicalequipment",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 6166,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "mutomimager",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 2346,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "structuralregulators",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 1720,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "liquidoxygen",
+                "sellPrice": 1427,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 310,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "insulatingmembrane",
+                "sellPrice": 11029,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 2152,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "cmmcomposite",
+                "sellPrice": 6208,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 2308,
+                "demand": 0,
+                "demandBracket": 0,
+                "meanPrice": 0,
+                "name": "emergencypowercells",
+                "sellPrice": 0,
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 13,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "medicaldiagnosticequipment",
+                "sellPrice": 2944,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            },
+            {
+                "buyPrice": 0,
+                "demand": 2304,
+                "demandBracket": 2,
+                "meanPrice": 0,
+                "name": "steel",
+                "sellPrice": 4343,
+                "statusFlags": [
+                    "Consumer"
+                ],
+                "stock": 0,
+                "stockBracket": 0
+            }
+        ],
+        "horizons": true,
+        "marketId": 3702927616,
+        "odyssey": false,
+        "stationName": "T2X-NQK",
+        "stationType": "FleetCarrier",
+        "systemName": "M20 Sector EM-L c8-5",
+        "timestamp": "2025-08-08T03:18:54Z"
+    }
+}
