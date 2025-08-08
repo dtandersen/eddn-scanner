@@ -1,3 +1,4 @@
+from datetime import datetime
 from hamcrest import assert_that, equal_to
 import psycopg
 import pytest
@@ -32,13 +33,13 @@ def test_handles_commodities_event(
     market_repository: PsycopgMarketRepository,
 ):
     system_repository.create(
-        System(address=1, name="system", position=Point3D(0, 0, 0))
+        System(address=1, name="HR 1185", position=Point3D(0, 0, 0))
     )
-    market_repository.create(
-        Market(
-            system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
-        )
-    )
+    # market_repository.create(
+    #     Market(
+    #         system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
+    #     )
+    # )
     bus = EventBus()
     _writer = CommodityWriter(
         bus, commodity_repository, market_repository, system_repository
@@ -56,6 +57,7 @@ def test_handles_commodities_event(
                 "uploaderID": "df357959129a5486b2893c71ffd5215be97b6ee4",
             },
             "message": {
+                "carrierDockingAccess": "all",
                 "commodities": [
                     {
                         "buyPrice": 0,
@@ -82,6 +84,7 @@ def test_handles_commodities_event(
                     "Wine",
                 ],
                 "stationName": "K2N-WTT",
+                "stationType": "FleetCarrier",
                 "systemName": "HR 1185",
                 "timestamp": "2025-08-07T04:29:40Z",
             },
@@ -101,6 +104,20 @@ def test_handles_commodities_event(
                     demand=117,
                 ),
             ]
+        ),
+    )
+
+    assert_that(
+        market_repository.get_market(3712635648),
+        equal_to(
+            Market(
+                system_address=1,
+                market_id=3712635648,
+                name="K2N-WTT",
+                last_updated=datetime.fromisoformat("2025-08-07T04:29:40Z"),
+                station_type="FleetCarrier",
+                docking_access="all",
+            ),
         ),
     )
 

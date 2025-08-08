@@ -56,6 +56,8 @@ class CommodityWriter:
             AddCommodityRequest(
                 market_id=event.message.marketId,
                 station=event.message.stationName,
+                docking_access=event.message.carrierDockingAccess,
+                station_type=event.message.stationType,
                 system=event.message.systemName,
                 timestamp=timestamp,
                 commodities=[

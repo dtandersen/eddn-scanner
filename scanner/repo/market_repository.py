@@ -34,6 +34,7 @@ class MarketRow:
     name: str
     last_update: datetime | None
     station_type: str | None
+    docking_access: str | None
 
 
 class ResourceNotFoundError(Exception):
@@ -47,12 +48,13 @@ class PsycopgMarketRepository(MarketRepository):
     def create(self, market: Market):
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO market (market_id, system_address, name, station_type,last_update) VALUES (%s, %s, %s, %s, %s)",
+                "INSERT INTO market (market_id, system_address, name, station_type, docking_access, last_update) VALUES (%s, %s, %s, %s, %s, %s)",
                 (
                     market.market_id,
                     market.system_address,
                     market.name,
                     market.station_type,
+                    market.docking_access,
                     market.last_updated,
                 ),
             )
@@ -65,9 +67,10 @@ class PsycopgMarketRepository(MarketRepository):
             return [
                 Market(
                     market_id=int(row.market_id),
-                    station_type=row.station_type,
                     system_address=int(row.system_address),
                     name=row.name,
+                    station_type=row.station_type,
+                    docking_access=row.docking_access,
                     last_updated=row.last_update,
                 )
                 for row in rows
@@ -80,10 +83,11 @@ class PsycopgMarketRepository(MarketRepository):
             if row is None:
                 raise ResourceNotFoundError(f"Market {market_id} not found")
             return Market(
-                market_id=row.market_id,
-                system_address=row.system_address,
-                station_type=row.station_type,
+                market_id=int(row.market_id),
+                system_address=int(row.system_address),
                 name=row.name,
+                station_type=row.station_type,
+                docking_access=row.docking_access,
                 last_updated=row.last_update,
             )
 

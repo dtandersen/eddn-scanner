@@ -9,3 +9,4 @@ class Market:
     name: str
     last_updated: datetime | None
     station_type: str | None = None
+    docking_access: str | None = None

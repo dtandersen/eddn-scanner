@@ -198,6 +198,7 @@ def test_add_market_if_system_exists(
         station="ABC-123",
         system="System",
         station_type="FleetCarrier",
+        docking_access="all",
         timestamp=timestamp,
         commodities=[
             Commodity(
@@ -218,9 +219,10 @@ def test_add_market_if_system_exists(
             [
                 Market(
                     market_id=1,
+                    system_address=1,
                     name="ABC-123",
                     station_type="FleetCarrier",
-                    system_address=1,
+                    docking_access="all",
                     last_updated=timestamp,
                 ),
             ]
