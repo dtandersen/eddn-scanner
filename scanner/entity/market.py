@@ -8,3 +8,4 @@ class Market:
     system_address: int
     name: str
     last_updated: datetime | None
+    station_type: str | None = None

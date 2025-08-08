@@ -195,8 +195,9 @@ def test_add_market_if_system_exists(
     timestamp = datetime.now(tz=timezone.utc)
     request = AddCommodityRequest(
         market_id=1,
-        station="Station",
+        station="ABC-123",
         system="System",
+        station_type="FleetCarrier",
         timestamp=timestamp,
         commodities=[
             Commodity(
@@ -217,7 +218,8 @@ def test_add_market_if_system_exists(
             [
                 Market(
                     market_id=1,
-                    name="Station",
+                    name="ABC-123",
+                    station_type="FleetCarrier",
                     system_address=1,
                     last_updated=timestamp,
                 ),

@@ -15,6 +15,7 @@ class AddCommodityRequest:
     system: str
     station: str
     commodities: list[Commodity]
+    station_type: str | None = None
 
 
 class UpdateCommodities:
@@ -40,6 +41,7 @@ class UpdateCommodities:
                     request.market_id,
                     request.station,
                     request.system,
+                    request.station_type,
                 )
             except ResourceNotFoundError as e:
                 self.log.warning(e)
@@ -51,7 +53,13 @@ class UpdateCommodities:
         for commodity in request.commodities:
             self.commodity_repository.create(commodity)
 
-    def add_market(self, market_id: int, station_name: str, system_name: str):
+    def add_market(
+        self,
+        market_id: int,
+        station_name: str,
+        system_name: str,
+        station_type: str | None,
+    ):
         try:
             system = self.system_repository.get_system_by_name(system_name)
         except ResourceNotFoundError as e:
@@ -61,6 +69,7 @@ class UpdateCommodities:
             market_id=market_id,
             system_address=system.address,
             name=station_name,
+            station_type=station_type,
             last_updated=None,
         )
         self.market_repository.create(market)

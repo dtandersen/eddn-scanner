@@ -33,6 +33,7 @@ class MarketRow:
     system_address: int
     name: str
     last_update: datetime | None
+    station_type: str | None
 
 
 class ResourceNotFoundError(Exception):
@@ -46,11 +47,12 @@ class PsycopgMarketRepository(MarketRepository):
     def create(self, market: Market):
         with self.connection.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO market (market_id, system_address, name, last_update) VALUES (%s, %s, %s, %s)",
+                "INSERT INTO market (market_id, system_address, name, station_type,last_update) VALUES (%s, %s, %s, %s, %s)",
                 (
                     market.market_id,
                     market.system_address,
                     market.name,
+                    market.station_type,
                     market.last_updated,
                 ),
             )
@@ -63,6 +65,7 @@ class PsycopgMarketRepository(MarketRepository):
             return [
                 Market(
                     market_id=int(row.market_id),
+                    station_type=row.station_type,
                     system_address=int(row.system_address),
                     name=row.name,
                     last_updated=row.last_update,
@@ -79,6 +82,7 @@ class PsycopgMarketRepository(MarketRepository):
             return Market(
                 market_id=row.market_id,
                 system_address=row.system_address,
+                station_type=row.station_type,
                 name=row.name,
                 last_updated=row.last_update,
             )
