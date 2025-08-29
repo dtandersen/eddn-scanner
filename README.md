@@ -1,10 +1,15 @@
+# EDDN Scanner
+
+A tool for Elite Dangerous that reads events from EDDN and saves them to a Postgres database.
+
+# Running
 
 Create `yoyo.ini`.
 
 ```
 [DEFAULT]
 sources = migrations
-database = postgresql+psycopg://USERNAME:PASSWORD@localhost/scanner
+database = postgresql+psycopg://DB_USER:DB_PASSWORD@DB_HOST/DB_NAME
 batch_mode = off
 verbosity = 0
 ```

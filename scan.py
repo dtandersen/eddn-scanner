@@ -2,6 +2,7 @@ import locale
 import logging
 import asyncio
 import os
+import sys
 
 from dotenv import load_dotenv
 import psycopg
@@ -61,5 +62,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
     asyncio.run(main())
