@@ -8,6 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
-scanner.log
+*.log
 yoyo.ini
 .env
+.env.docker
+old/

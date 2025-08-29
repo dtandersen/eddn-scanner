@@ -1,0 +1,9 @@
+
+
+services:
+  eddn-scanner:
+    build: .
+    env_file:
+    - .env.docker
+    # volumes:
+    # - yoyo.ini:/app/yoyo.ini

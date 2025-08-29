@@ -1,0 +1,30 @@
+# python
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.venv/
+
+# VS Code
+.vscode
+
+# Misc
+schema/
+sql/
+tests/
+*.log
+
+# Environment
+.env
+.env.docker
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# git
+.git/
+.gitignore
+
+# database
+yoyo.ini
