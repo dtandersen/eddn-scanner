@@ -8,6 +8,7 @@ from testcontainers.postgres import PostgresContainer  # type: ignore
 
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
+from scanner.repo.power_repository import PsycopgPowerRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
 from tests.facade import TestFacade  # type: ignore
 
@@ -108,6 +109,11 @@ def commodity_repository(connection: psycopg.Connection):
 @pytest.fixture
 def system_repository(connection: psycopg.Connection):
     return PsycopgSystemRepository(connection)
+
+
+@pytest.fixture
+def power_repository(connection: psycopg.Connection):
+    return PsycopgPowerRepository(connection)
 
 
 @pytest.fixture

@@ -175,3 +175,58 @@ def test_new_system_discovered(
             ),
         ),
     )
+
+
+def test_powers_updated(
+    commodity_repository: PsycopgCommodityRepository,
+    system_repository: PsycopgSystemRepository,
+    market_repository: PsycopgMarketRepository,
+):
+    system_repository.create(
+        System(address=1, name="system", position=Point3D(0, 0, 0))
+    )
+    market_repository.create(
+        Market(
+            system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
+        )
+    )
+    bus = EventBus()
+    _writer = CommodityWriter(
+        bus, commodity_repository, market_repository, system_repository
+    )
+    events = CommodityEddnHandler(bus)
+    events.handle(
+        {
+            "$schemaRef": "https://eddn.edcd.io/schemas/fssdiscoveryscan/1",
+            "header": {
+                "gamebuild": "r316268/r0 ",
+                "gameversion": "4.1.3.0",
+                "gatewayTimestamp": "2025-08-07T18:25:09.281149Z",
+                "softwareName": "EDO Materials Helper",
+                "softwareVersion": "2.221",
+                "uploaderID": "3b9e71f3f8e276e389065e70026fb905901f671e",
+            },
+            "message": {
+                "BodyCount": 15,
+                "NonBodyCount": 59,
+                "StarPos": [51.40625, -54.40625, -30.5],
+                "SystemAddress": 1458309141194,
+                "SystemName": "Eurybia",
+                "event": "FSSDiscoveryScan",
+                "horizons": True,
+                "odyssey": True,
+                "timestamp": "2025-08-07T18:25:02Z",
+            },
+        }
+    )
+
+    assert_that(
+        system_repository.get_system_by_name("Eurybia"),
+        equal_to(
+            System(
+                address=1458309141194,
+                name="Eurybia",
+                position=Point3D(51.40625, -54.40625, -30.5),
+            ),
+        ),
+    )
