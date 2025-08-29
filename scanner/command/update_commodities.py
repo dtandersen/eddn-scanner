@@ -35,7 +35,29 @@ class UpdateCommodities:
     def execute(self, request: AddCommodityRequest):
         self.log.info(f"Updating commodities for {request.system}/{request.station}")
         try:
-            _market = self.market_repository.get_market(request.market_id)
+            market = self.market_repository.get_market(request.market_id)
+            if (
+                request.docking_access is not None
+                and market.docking_access != request.docking_access
+            ):
+                self.log.info(
+                    f"Updating docking access for market {request.market_id} from {market.docking_access} to {request.docking_access}"
+                )
+                # market.docking_access = request.docking_access
+                self.market_repository.update_docking_access(
+                    request.market_id, request.docking_access
+                )
+
+            if (
+                request.station_type is not None
+                and market.station_type != request.station_type
+            ):
+                self.log.info(
+                    f"Updating station type for market {request.market_id} from {market.station_type} to {request.station_type}"
+                )
+                self.market_repository.update_station_type(
+                    request.market_id, request.station_type
+                )
         except ResourceNotFoundError as _e:
             try:
                 self.add_market(

@@ -26,6 +26,14 @@ class MarketRepository(metaclass=ABCMeta):
     def update_timestamp(self, market_id: int, timestamp: datetime):
         pass
 
+    @abstractmethod
+    def update_docking_access(self, market_id: int, docking_access: str):
+        pass
+
+    @abstractmethod
+    def update_station_type(self, market_id: int, station_type: str):
+        pass
+
 
 @dataclass
 class MarketRow:
@@ -96,5 +104,21 @@ class PsycopgMarketRepository(MarketRepository):
             cursor.execute(
                 "UPDATE market SET last_update = %s WHERE market_id = %s",
                 (timestamp, market_id),
+            )
+            self.connection.commit()
+
+    def update_docking_access(self, market_id: int, docking_access: str):
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE market SET docking_access = %s WHERE market_id = %s",
+                (docking_access, market_id),
+            )
+            self.connection.commit()
+
+    def update_station_type(self, market_id: int, station_type: str):
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE market SET station_type = %s WHERE market_id = %s",
+                (station_type, market_id),
             )
             self.connection.commit()

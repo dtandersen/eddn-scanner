@@ -289,3 +289,102 @@ def test_dont_add_commodities_if_market_doesnt_exist(
         commodity_repository.all(),
         equal_to([]),
     )
+
+
+def test_docking_access_is_updated(
+    command: UpdateCommodities,
+    market_repository: PsycopgMarketRepository,
+    test_facade: TestFacade,
+):
+    test_facade.given_system(address=1, name="System", position=Point3D(0, 0, 0))
+    test_facade.given_market(
+        market_id=1,
+        system_address=1,
+        name="ABC-123",
+        station_type="FleetCarrier",
+        docking_access=None,
+    )
+
+    timestamp = datetime.now(tz=timezone.utc)
+    request = AddCommodityRequest(
+        market_id=1,
+        station="ABC-123",
+        system="System",
+        station_type="FleetCarrier",
+        docking_access="all",
+        timestamp=timestamp,
+        commodities=[
+            Commodity(
+                market_id=1,
+                name="gold",
+                buy=90,
+                sell=110,
+                supply=1000,
+                demand=500,
+            ),
+        ],
+    )
+    command.execute(request)
+
+    assert_that(
+        market_repository.get_market(1),
+        equal_to(
+            Market(
+                market_id=1,
+                system_address=1,
+                name="ABC-123",
+                station_type="FleetCarrier",
+                docking_access="all",
+                last_updated=timestamp,
+            ),
+        ),
+    )
+
+
+def test_station_type_is_updated(
+    command: UpdateCommodities,
+    market_repository: PsycopgMarketRepository,
+    test_facade: TestFacade,
+):
+    test_facade.given_system(address=1, name="System", position=Point3D(0, 0, 0))
+    test_facade.given_market(
+        market_id=1,
+        system_address=1,
+        name="ABC-123",
+        station_type=None,
+    )
+
+    timestamp = datetime.now(tz=timezone.utc)
+    request = AddCommodityRequest(
+        market_id=1,
+        station="ABC-123",
+        system="System",
+        station_type="FleetCarrier",
+        docking_access="all",
+        timestamp=timestamp,
+        commodities=[
+            Commodity(
+                market_id=1,
+                name="gold",
+                buy=90,
+                sell=110,
+                supply=1000,
+                demand=500,
+            ),
+        ],
+    )
+    command.execute(request)
+
+    assert_that(
+        market_repository.get_market(1),
+        equal_to(
+            Market(
+                market_id=1,
+                system_address=1,
+                name="ABC-123",
+                station_type="FleetCarrier",
+                docking_access="all",
+                last_updated=timestamp,
+            ),
+        ),
+    )

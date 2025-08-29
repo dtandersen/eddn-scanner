@@ -35,12 +35,16 @@ class TestFacade:
         system_address: int,
         name: str,
         last_updated: datetime | None = None,
+        station_type: str | None = None,
+        docking_access: str | None = None,
     ):
         market = Market(
             market_id=market_id,
             system_address=system_address,
             name=name,
             last_updated=last_updated,
+            station_type=station_type,
+            docking_access=docking_access,
         )
         self.market_repository.create(market)
 
