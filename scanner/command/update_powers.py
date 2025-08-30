@@ -25,5 +25,6 @@ class UpdatePowers:
         self.power_repository = power_repository
 
     def execute(self, request: UpdatePowersRequest):
+        self.power_repository.delete_progress(request.system_address)
         for power in request.powers:
             self.power_repository.create(power)

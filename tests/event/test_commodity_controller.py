@@ -5,8 +5,8 @@ import pytest
 from scanner.entity.commodity import Commodity
 from scanner.entity.market import Market
 from scanner.entity.system import Point3D, System
-from scanner.event.eddb_handler import CommodityEddnHandler, CommodityWriter
-from scanner.event.event_handler import EventBus
+from scanner.event.eddb_handler import CommodityController
+from scanner.event.event_handler import EventBus, MessageHandler
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
@@ -31,21 +31,17 @@ def test_handles_commodities_event(
     commodity_repository: PsycopgCommodityRepository,
     system_repository: PsycopgSystemRepository,
     market_repository: PsycopgMarketRepository,
+    message_handler: MessageHandler,
+    event_bus: EventBus,
 ):
     system_repository.create(
         System(address=1, name="HR 1185", position=Point3D(0, 0, 0))
     )
-    # market_repository.create(
-    #     Market(
-    #         system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
-    #     )
-    # )
-    bus = EventBus()
-    _writer = CommodityWriter(
-        bus, commodity_repository, market_repository, system_repository
+    _writer = CommodityController(
+        event_bus, commodity_repository, market_repository, system_repository
     )
-    events = CommodityEddnHandler(bus)
-    events.handle(
+    message_handler.process_message(
+        """
         {
             "$schemaRef": "https://eddn.edcd.io/schemas/commodity/3",
             "header": {
@@ -54,7 +50,7 @@ def test_handles_commodities_event(
                 "gatewayTimestamp": "2025-08-07T04:29:41.647517Z",
                 "softwareName": "E:D Market Connector [Windows]",
                 "softwareVersion": "5.13.1",
-                "uploaderID": "df357959129a5486b2893c71ffd5215be97b6ee4",
+                "uploaderID": "df357959129a5486b2893c71ffd5215be97b6ee4"
             },
             "message": {
                 "carrierDockingAccess": "all",
@@ -67,13 +63,18 @@ def test_handles_commodities_event(
                         "name": "advancedcatalysers",
                         "sellPrice": 3424,
                         "stock": 0,
-                        "stockBracket": 0,
+                        "stockBracket": 0
                     }
                 ],
-                "economies": [{"name": "Carrier", "proportion": 1}],
-                "horizons": False,
+                "economies": [
+                    {
+                        "name": "Carrier",
+                        "proportion": 1
+                    }
+                ],
+                "horizons": false,
                 "marketId": 3712635648,
-                "odyssey": True,
+                "odyssey": true,
                 "prohibited": [
                     "ApaVietii",
                     "BasicNarcotics",
@@ -81,14 +82,15 @@ def test_handles_commodities_event(
                     "BootlegLiquor",
                     "Liquor",
                     "Tobacco",
-                    "Wine",
+                    "Wine"
                 ],
                 "stationName": "K2N-WTT",
                 "stationType": "FleetCarrier",
                 "systemName": "HR 1185",
-                "timestamp": "2025-08-07T04:29:40Z",
-            },
+                "timestamp": "2025-08-07T04:29:40Z"
+            }
         }
+        """
     )
 
     assert_that(
@@ -126,6 +128,8 @@ def test_new_system_discovered(
     commodity_repository: PsycopgCommodityRepository,
     system_repository: PsycopgSystemRepository,
     market_repository: PsycopgMarketRepository,
+    message_handler: MessageHandler,
+    event_bus: EventBus,
 ):
     system_repository.create(
         System(address=1, name="system", position=Point3D(0, 0, 0))
@@ -135,12 +139,11 @@ def test_new_system_discovered(
             system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
         )
     )
-    bus = EventBus()
-    _writer = CommodityWriter(
-        bus, commodity_repository, market_repository, system_repository
+    _writer = CommodityController(
+        event_bus, commodity_repository, market_repository, system_repository
     )
-    events = CommodityEddnHandler(bus)
-    events.handle(
+    message_handler.process_message(
+        """
         {
             "$schemaRef": "https://eddn.edcd.io/schemas/fssdiscoveryscan/1",
             "header": {
@@ -149,20 +152,25 @@ def test_new_system_discovered(
                 "gatewayTimestamp": "2025-08-07T18:25:09.281149Z",
                 "softwareName": "EDO Materials Helper",
                 "softwareVersion": "2.221",
-                "uploaderID": "3b9e71f3f8e276e389065e70026fb905901f671e",
+                "uploaderID": "3b9e71f3f8e276e389065e70026fb905901f671e"
             },
             "message": {
                 "BodyCount": 15,
                 "NonBodyCount": 59,
-                "StarPos": [51.40625, -54.40625, -30.5],
+                "StarPos": [
+                    51.40625,
+                    -54.40625,
+                    -30.5
+                ],
                 "SystemAddress": 1458309141194,
                 "SystemName": "Eurybia",
                 "event": "FSSDiscoveryScan",
-                "horizons": True,
-                "odyssey": True,
-                "timestamp": "2025-08-07T18:25:02Z",
-            },
+                "horizons": true,
+                "odyssey": true,
+                "timestamp": "2025-08-07T18:25:02Z"
+            }
         }
+        """
     )
 
     assert_that(
@@ -181,6 +189,8 @@ def test_powers_updated(
     commodity_repository: PsycopgCommodityRepository,
     system_repository: PsycopgSystemRepository,
     market_repository: PsycopgMarketRepository,
+    message_handler: MessageHandler,
+    event_bus: EventBus,
 ):
     system_repository.create(
         System(address=1, name="system", position=Point3D(0, 0, 0))
@@ -190,12 +200,11 @@ def test_powers_updated(
             system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
         )
     )
-    bus = EventBus()
-    _writer = CommodityWriter(
-        bus, commodity_repository, market_repository, system_repository
+    _writer = CommodityController(
+        event_bus, commodity_repository, market_repository, system_repository
     )
-    events = CommodityEddnHandler(bus)
-    events.handle(
+    message_handler.process_message(
+        """
         {
             "$schemaRef": "https://eddn.edcd.io/schemas/fssdiscoveryscan/1",
             "header": {
@@ -204,20 +213,25 @@ def test_powers_updated(
                 "gatewayTimestamp": "2025-08-07T18:25:09.281149Z",
                 "softwareName": "EDO Materials Helper",
                 "softwareVersion": "2.221",
-                "uploaderID": "3b9e71f3f8e276e389065e70026fb905901f671e",
+                "uploaderID": "3b9e71f3f8e276e389065e70026fb905901f671e"
             },
             "message": {
                 "BodyCount": 15,
                 "NonBodyCount": 59,
-                "StarPos": [51.40625, -54.40625, -30.5],
+                "StarPos": [
+                    51.40625,
+                    -54.40625,
+                    -30.5
+                ],
                 "SystemAddress": 1458309141194,
                 "SystemName": "Eurybia",
                 "event": "FSSDiscoveryScan",
-                "horizons": True,
-                "odyssey": True,
-                "timestamp": "2025-08-07T18:25:02Z",
-            },
+                "horizons": true,
+                "odyssey": true,
+                "timestamp": "2025-08-07T18:25:02Z"
+            }
         }
+        """
     )
 
     assert_that(

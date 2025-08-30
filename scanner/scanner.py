@@ -1,26 +1,26 @@
-from scanner.event.eddb_handler import EddnHandler
-
-
 import zmq
 import zmq.asyncio
 from dacite import Config
 from psycopg.errors import InFailedSqlTransaction
 
-import json
 import logging
 import zlib
 
+from scanner.event.event_handler import MessageHandler
 
-class EddnScannerV2:
+
+class EddnScanner:
     """https://pyzmq.readthedocs.io/en/latest/api/zmq.asyncio.html"""
 
     def __init__(
         self,
-        event_handler: EddnHandler,
+        # event_handler: EddnHandler,
+        message_handler: MessageHandler,
         endpoint: str = "tcp://eddn.edcd.io:9500",
         timeout: int = 600000,
     ):
-        self._event_handler = event_handler
+        # self._event_handler = event_handler
+        self._message_handler = message_handler
         self._endpoint = endpoint
         self._timeout = timeout
         self._log = logging.getLogger(__name__)
@@ -57,26 +57,8 @@ class EddnScannerV2:
 
     async def process_event(self, msg: bytes):
         try:
-            self._event_handler.handle(json.loads(msg))
-            # json_msg = json.loads(msg)
-            # self._event_handler.handle(json_msg)
-            # pretty = json.dumps(json_msg, indent=2)
-            # self._log.debug(f"{pretty}")
-            # schema = json_msg.get("$schemaRef")
-            # # self._log.info(f"Received message with schema: {schema}")
-            # json_msg["schemaRef"] = schema
-            # del json_msg["$schemaRef"]
-
-            # if schema is None:
-            #     self._log.warning(f"No schemaRef found in message: {json_msg}")
-            #     return
-
-            # handler = self._schema_handlers.get(schema)
-            # if handler is None:
-            #     self._unknown_schema_handler(json_msg)
-            #     return
-
-            # handler(json_msg)
+            # self._event_handler.handle(json.loads(msg))
+            self._message_handler.process_message(msg.decode("utf-8"))
         except InFailedSqlTransaction as e2:
             raise e2
         except Exception as e:

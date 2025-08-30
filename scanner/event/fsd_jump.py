@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 
 @dataclass
@@ -11,8 +11,10 @@ class Progress:
 @dataclass
 class FSDJumpEventMessage:
     SystemAddress: int
-    PowerplayState: str
-    PowerplayConflictProgress: List[Progress]
+    StarSystem: str
+    StarPos: List[float]
+    PowerplayState: Optional[str]
+    PowerplayConflictProgress: List[Progress] = field(default_factory=lambda: [])
 
 
 @dataclass

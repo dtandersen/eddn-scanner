@@ -7,12 +7,14 @@ import sys
 from dotenv import load_dotenv
 import psycopg
 
-from scanner.event.eddb_handler import CommodityEddnHandler, CommodityWriter
-from scanner.event.event_handler import EventBus
+from scanner.event.eddb_handler import CommodityController
+from scanner.event.event_handler import EventBus, MessageHandler
+from scanner.event.power_controller import PowerController
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
+from scanner.repo.power_repository import PsycopgPowerRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
-from scanner.scanner import EddnScannerV2
+from scanner.scanner import EddnScanner
 
 
 def get_connection():
@@ -47,16 +49,17 @@ async def main():
     load_dotenv()
     bus = EventBus()
     connection = get_connection()
-    _writer = CommodityWriter(
+    _writer = CommodityController(
         bus,
         PsycopgCommodityRepository(connection),
         PsycopgMarketRepository(connection),
         PsycopgSystemRepository(connection),
     )
-    scanner = EddnScannerV2(CommodityEddnHandler(bus))
-    # scanner.add_docking_handler(DockingHandler())
-    # scanner.add_signal_handler(SignalDiscoveredHandler())
-    # scanner.add_commodity_handler(CommodityHandler())
+    _power_controller = PowerController(
+        bus, PsycopgSystemRepository(connection), PsycopgPowerRepository(connection)
+    )
+    message_handler = MessageHandler(bus)
+    scanner = EddnScanner(message_handler)
 
     await scanner.start()
 

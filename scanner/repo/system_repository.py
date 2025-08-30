@@ -21,6 +21,10 @@ class SystemRepository(metaclass=ABCMeta):
     def get_system_by_name(self, name: str) -> System:
         pass
 
+    @abstractmethod
+    def get_system_by_address(self, address: int) -> System:
+        pass
+
 
 @dataclass
 class SystemRow:
@@ -68,6 +72,20 @@ class PsycopgSystemRepository(SystemRepository):
             row = cursor.fetchone()
             if not row:
                 raise ResourceNotFoundError(f"System '{name}' not found")
+            return System(
+                address=int(row.address),
+                name=row.name,
+                position=Point3D(x=float(row.x), y=float(row.y), z=float(row.z)),
+            )
+
+    def get_system_by_address(self, address: int) -> System:
+        with self.connection.cursor(row_factory=class_row(SystemRow)) as cursor:
+            cursor.execute("SELECT * FROM system WHERE address = %s", (address,))
+            row = cursor.fetchone()
+            if not row:
+                raise ResourceNotFoundError(
+                    f"System with address '{address}' not found"
+                )
             return System(
                 address=int(row.address),
                 name=row.name,

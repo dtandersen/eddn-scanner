@@ -94,6 +94,7 @@ def connection(
     )
 
     connection.execute("truncate system cascade")
+    connection.execute("truncate sys_power cascade")
 
     def remove_container():
         connection.close()

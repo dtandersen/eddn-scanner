@@ -4,7 +4,7 @@ import asyncio
 import sys
 
 from scanner.event.eddb_handler import LoggingEddnHandler
-from scanner.scanner import EddnScannerV2
+from scanner.scanner import EddnScanner
 
 
 async def main():
@@ -25,7 +25,7 @@ async def main():
         handlers=[file_handler, stream_handler],
     )
 
-    scanner = EddnScannerV2(
+    scanner = EddnScanner(
         LoggingEddnHandler(
             None
             # [

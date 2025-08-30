@@ -4,8 +4,6 @@ import json
 import logging
 from typing import Any, Dict
 
-from dacite import Config, from_dict
-
 
 # from scanner import scanner
 from scanner.command.update_commodities import UpdateCommodities, AddCommodityRequest
@@ -30,7 +28,7 @@ class EddnHandler(metaclass=ABCMeta):
         pass
 
 
-class CommodityWriter:
+class CommodityController:
     log = logging.getLogger(__name__)
 
     def __init__(
@@ -40,8 +38,8 @@ class CommodityWriter:
         market_repository: MarketRepository,
         system_repository: SystemRepository,
     ):
-        events.commodities.add_delegate(self.on_commodities)
-        events.discovery.add_delegate(self.on_discovery)
+        events.commodities.subscribe(self.on_commodities)
+        events.discovery.subscribe(self.on_discovery)
 
         self.commodity_repository = commodity_repository
         self.market_repository = market_repository
@@ -93,28 +91,6 @@ class CommodityWriter:
             supply=event.stock,
             demand=event.demand,
         )
-
-
-class CommodityEddnHandler(EddnHandler):
-    def __init__(self, event_bus: EventBus):
-        self.event_bus = event_bus
-
-    def handle(self, event: EddnEvent):
-        schema = event.get("$schemaRef")
-        if schema == "https://eddn.edcd.io/schemas/commodity/3":
-            discovery_event = from_dict(
-                data_class=CommoditiesEvent,
-                data=event,
-                config=Config(strict=False, convert_key=fix_schema_ref),
-            )
-            self.event_bus.commodities.publish(discovery_event)
-        elif schema == "https://eddn.edcd.io/schemas/fssdiscoveryscan/1":
-            discovery_event = from_dict(
-                data_class=DiscoveryEvent,
-                data=event,
-                config=Config(strict=False, convert_key=fix_schema_ref),
-            )
-            self.event_bus.discovery.publish(discovery_event)
 
 
 class LoggingEddnHandler(EddnHandler):
