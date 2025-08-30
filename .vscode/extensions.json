@@ -2,6 +2,7 @@
     "recommendations": [
         "ms-python.python",
         "ms-python.black-formatter",
-        "kiliantyler.kubernetes-yaml-formatter-x"
+        "kiliantyler.kubernetes-yaml-formatter-x",
+        "ms-python.debugpy"
     ]
 }
