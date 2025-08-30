@@ -1,15 +1,19 @@
 from hamcrest import assert_that, equal_to
+from scanner.entity.market import Market
 from scanner.entity.power import Power
 from scanner.entity.system import Point3D, System
-from scanner.event.event_handler import MessageHandler
-from scanner.event.power_controller import PowerController
+from scanner.controller.commodity_controller import CommodityController
+from scanner.event.event_handler import EventBus, MessageHandler
+from scanner.controller.power_controller import SystemController
+from scanner.repo.commodity_repository import PsycopgCommodityRepository
+from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.power_repository import PsycopgPowerRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
 
 
 def test_handles_commodities_event(
     message_handler: MessageHandler,
-    power_controller: PowerController,
+    system_controller: SystemController,
     power_repository: PsycopgPowerRepository,
     system_repository: PsycopgSystemRepository,
 ):
@@ -129,7 +133,7 @@ def test_handles_commodities_event(
 
 def test_adds_missing_system(
     message_handler: MessageHandler,
-    power_controller: PowerController,
+    system_controller: SystemController,
     power_repository: PsycopgPowerRepository,
     system_repository: PsycopgSystemRepository,
 ):
@@ -235,7 +239,7 @@ def test_adds_missing_system(
 
 def test_stronghold_with_no_underminers(
     message_handler: MessageHandler,
-    power_controller: PowerController,
+    system_controller: SystemController,
     power_repository: PsycopgPowerRepository,
     system_repository: PsycopgSystemRepository,
 ):
@@ -425,3 +429,127 @@ def test_stronghold_with_no_underminers(
     #         ]
     #     ),
     # )
+
+
+def test_new_system_discovered(
+    commodity_repository: PsycopgCommodityRepository,
+    system_repository: PsycopgSystemRepository,
+    market_repository: PsycopgMarketRepository,
+    power_repository: PsycopgPowerRepository,
+    message_handler: MessageHandler,
+    event_bus: EventBus,
+    commodity_controller: CommodityController,
+):
+    system_repository.create(
+        System(address=1, name="system", position=Point3D(0, 0, 0))
+    )
+    market_repository.create(
+        Market(
+            system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
+        )
+    )
+    # _writer = CommodityController(
+    #     event_bus,
+    #     commodity_repository,
+    #     market_repository,
+    #     system_repository,
+    #     power_repository,
+    # )
+    message_handler.process_message(
+        """
+        {
+            "$schemaRef": "https://eddn.edcd.io/schemas/fssdiscoveryscan/1",
+            "header": {
+                "gamebuild": "r316268/r0 ",
+                "gameversion": "4.1.3.0",
+                "gatewayTimestamp": "2025-08-07T18:25:09.281149Z",
+                "softwareName": "EDO Materials Helper",
+                "softwareVersion": "2.221",
+                "uploaderID": "3b9e71f3f8e276e389065e70026fb905901f671e"
+            },
+            "message": {
+                "BodyCount": 15,
+                "NonBodyCount": 59,
+                "StarPos": [
+                    51.40625,
+                    -54.40625,
+                    -30.5
+                ],
+                "SystemAddress": 1458309141194,
+                "SystemName": "Eurybia",
+                "event": "FSSDiscoveryScan",
+                "horizons": true,
+                "odyssey": true,
+                "timestamp": "2025-08-07T18:25:02Z"
+            }
+        }
+        """
+    )
+
+    assert_that(
+        system_repository.get_system_by_name("Eurybia"),
+        equal_to(
+            System(
+                address=1458309141194,
+                name="Eurybia",
+                position=Point3D(51.40625, -54.40625, -30.5),
+            ),
+        ),
+    )
+
+
+def test_powers_updated(
+    system_repository: PsycopgSystemRepository,
+    market_repository: PsycopgMarketRepository,  # noqa: F821
+    message_handler: MessageHandler,
+    commodity_controller: CommodityController,
+):
+    system_repository.create(
+        System(address=1, name="system", position=Point3D(0, 0, 0))
+    )
+    market_repository.create(
+        Market(
+            system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
+        )
+    )
+    message_handler.process_message(
+        """
+        {
+            "$schemaRef": "https://eddn.edcd.io/schemas/fssdiscoveryscan/1",
+            "header": {
+                "gamebuild": "r316268/r0 ",
+                "gameversion": "4.1.3.0",
+                "gatewayTimestamp": "2025-08-07T18:25:09.281149Z",
+                "softwareName": "EDO Materials Helper",
+                "softwareVersion": "2.221",
+                "uploaderID": "3b9e71f3f8e276e389065e70026fb905901f671e"
+            },
+            "message": {
+                "BodyCount": 15,
+                "NonBodyCount": 59,
+                "StarPos": [
+                    51.40625,
+                    -54.40625,
+                    -30.5
+                ],
+                "SystemAddress": 1458309141194,
+                "SystemName": "Eurybia",
+                "event": "FSSDiscoveryScan",
+                "horizons": true,
+                "odyssey": true,
+                "timestamp": "2025-08-07T18:25:02Z"
+            }
+        }
+        """
+    )
+
+    assert_that(
+        system_repository.get_system_by_name("Eurybia"),
+        equal_to(
+            System(
+                address=1458309141194,
+                name="Eurybia",
+                position=Point3D(51.40625, -54.40625, -30.5),
+            ),
+        ),
+    )

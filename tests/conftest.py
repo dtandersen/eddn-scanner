@@ -6,12 +6,14 @@ from yoyo import get_backend, read_migrations  # type: ignore
 import os
 from testcontainers.postgres import PostgresContainer  # type: ignore
 
+from scanner.command.command_factory import CommandFactory
+from scanner.controller.commodity_controller import CommodityController
 from scanner.event.event_handler import EventBus, MessageHandler
-from scanner.event.power_controller import PowerController
+from scanner.controller.power_controller import SystemController
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.power_repository import PsycopgPowerRepository
-from scanner.repo.system_repository import PsycopgSystemRepository, SystemRepository
+from scanner.repo.system_repository import PsycopgSystemRepository
 from tests.facade import TestFacade  # type: ignore
 
 
@@ -138,6 +140,21 @@ def test_facade(
 
 
 @pytest.fixture
+def command_factory(
+    system_repository: PsycopgSystemRepository,
+    market_repository: PsycopgMarketRepository,
+    commodity_repository: PsycopgCommodityRepository,
+    power_repository: PsycopgPowerRepository,
+):
+    return CommandFactory(
+        system_repository=system_repository,
+        market_repository=market_repository,
+        commodity_repository=commodity_repository,
+        power_repository=power_repository,
+    )
+
+
+@pytest.fixture
 def event_bus():
     return EventBus()
 
@@ -148,9 +165,19 @@ def message_handler(event_bus: EventBus):
 
 
 @pytest.fixture
-def power_controller(
+def system_controller(
     event_bus: EventBus,
-    system_repository: SystemRepository,
-    power_repository: PsycopgPowerRepository,
+    command_factory: CommandFactory,
 ):
-    return PowerController(event_bus, system_repository, power_repository)
+    return SystemController(event_bus, command_factory)
+
+
+@pytest.fixture
+def commodity_controller(
+    event_bus: EventBus,
+    command_factory: CommandFactory,
+):
+    return CommodityController(
+        event_bus,
+        command_factory,
+    )

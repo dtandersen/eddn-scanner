@@ -3,7 +3,7 @@ import logging
 import asyncio
 import sys
 
-from scanner.event.eddb_handler import LoggingEddnHandler
+from scanner.controller.handler import LoggingEddnHandler
 from scanner.scanner import EddnScanner
 
 

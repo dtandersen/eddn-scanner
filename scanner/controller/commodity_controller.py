@@ -1,31 +1,16 @@
-from abc import ABCMeta, abstractmethod
 from datetime import datetime
-import json
 import logging
-from typing import Any, Dict
 
 
 # from scanner import scanner
-from scanner.command.update_commodities import UpdateCommodities, AddCommodityRequest
-from scanner.command.update_system import UpdateSystem, UpdateSystemRequest
+from scanner.command.command_factory import CommandFactory
+from scanner.command.update_commodities import UpdateCommoditiesRequest
+from scanner.command.update_system import UpdateSystemRequest
 from scanner.entity.commodity import Commodity
 from scanner.entity.system import Point3D
 from scanner.event.commodity import CommoditiesEvent, CommodityEvent
 from scanner.event.discovery import DiscoveryEvent
 from scanner.event.event_handler import EventBus
-from scanner.repo.commodity_repository import CommodityRepository
-from scanner.repo.market_repository import MarketRepository
-from scanner.repo.system_repository import SystemRepository
-
-# import scanner
-
-EddnEvent = Dict[str, Any]
-
-
-class EddnHandler(metaclass=ABCMeta):
-    @abstractmethod
-    def handle(self, event: EddnEvent):
-        pass
 
 
 class CommodityController:
@@ -34,24 +19,18 @@ class CommodityController:
     def __init__(
         self,
         events: EventBus,
-        commodity_repository: CommodityRepository,
-        market_repository: MarketRepository,
-        system_repository: SystemRepository,
+        command_factory: CommandFactory,
     ):
         events.commodities.subscribe(self.on_commodities)
         events.discovery.subscribe(self.on_discovery)
 
-        self.commodity_repository = commodity_repository
-        self.market_repository = market_repository
-        self.system_repository = system_repository
+        self.command_factory = command_factory
 
     def on_commodities(self, event: CommoditiesEvent):
         timestamp = datetime.fromisoformat(event.message.timestamp)
-        command = UpdateCommodities(
-            self.commodity_repository, self.market_repository, self.system_repository
-        )
+        command = self.command_factory.update_commodities()
         command.execute(
-            AddCommodityRequest(
+            UpdateCommoditiesRequest(
                 market_id=event.message.marketId,
                 station=event.message.stationName,
                 docking_access=event.message.carrierDockingAccess,
@@ -69,16 +48,18 @@ class CommodityController:
         )
 
     def on_discovery(self, event: DiscoveryEvent):
-        command = UpdateSystem(self.system_repository)
+        command = self.command_factory.update_system()
         command.execute(
             UpdateSystemRequest(
-                address=event.message.SystemAddress,
-                name=event.message.SystemName,
+                system_address=event.message.SystemAddress,
+                system_name=event.message.SystemName,
                 position=Point3D(
                     event.message.StarPos[0],
                     event.message.StarPos[1],
                     event.message.StarPos[2],
                 ),
+                state=None,
+                powers=[],
             )
         )
 
@@ -91,20 +72,6 @@ class CommodityController:
             supply=event.stock,
             demand=event.demand,
         )
-
-
-class LoggingEddnHandler(EddnHandler):
-    log = logging.getLogger(__name__)
-
-    def __init__(self, filter: list[str] | None = None):
-        self.filter = filter
-
-    def handle(self, event: EddnEvent):
-        schema = event.get("$schemaRef")
-        if self.filter and schema not in self.filter:
-            return
-
-        self.log.info(f"{json.dumps(event, indent=2)}\n---")
 
 
 def fix_schema_ref(key: str) -> str:

@@ -1,30 +1,13 @@
 from datetime import datetime
 from hamcrest import assert_that, equal_to
-import psycopg
-import pytest
 from scanner.entity.commodity import Commodity
 from scanner.entity.market import Market
 from scanner.entity.system import Point3D, System
-from scanner.event.eddb_handler import CommodityController
-from scanner.event.event_handler import EventBus, MessageHandler
+from scanner.controller.commodity_controller import CommodityController
+from scanner.event.event_handler import MessageHandler
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
-
-
-@pytest.fixture
-def commodity_repository(connection: psycopg.Connection):
-    return PsycopgCommodityRepository(connection)
-
-
-@pytest.fixture
-def system_repository(connection: psycopg.Connection):
-    return PsycopgSystemRepository(connection)
-
-
-@pytest.fixture
-def market_repository(connection: psycopg.Connection):
-    return PsycopgMarketRepository(connection)
 
 
 def test_handles_commodities_event(
@@ -32,14 +15,12 @@ def test_handles_commodities_event(
     system_repository: PsycopgSystemRepository,
     market_repository: PsycopgMarketRepository,
     message_handler: MessageHandler,
-    event_bus: EventBus,
+    commodity_controller: CommodityController,
 ):
     system_repository.create(
         System(address=1, name="HR 1185", position=Point3D(0, 0, 0))
     )
-    _writer = CommodityController(
-        event_bus, commodity_repository, market_repository, system_repository
-    )
+
     message_handler.process_message(
         """
         {
@@ -119,128 +100,6 @@ def test_handles_commodities_event(
                 last_updated=datetime.fromisoformat("2025-08-07T04:29:40Z"),
                 station_type="FleetCarrier",
                 docking_access="all",
-            ),
-        ),
-    )
-
-
-def test_new_system_discovered(
-    commodity_repository: PsycopgCommodityRepository,
-    system_repository: PsycopgSystemRepository,
-    market_repository: PsycopgMarketRepository,
-    message_handler: MessageHandler,
-    event_bus: EventBus,
-):
-    system_repository.create(
-        System(address=1, name="system", position=Point3D(0, 0, 0))
-    )
-    market_repository.create(
-        Market(
-            system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
-        )
-    )
-    _writer = CommodityController(
-        event_bus, commodity_repository, market_repository, system_repository
-    )
-    message_handler.process_message(
-        """
-        {
-            "$schemaRef": "https://eddn.edcd.io/schemas/fssdiscoveryscan/1",
-            "header": {
-                "gamebuild": "r316268/r0 ",
-                "gameversion": "4.1.3.0",
-                "gatewayTimestamp": "2025-08-07T18:25:09.281149Z",
-                "softwareName": "EDO Materials Helper",
-                "softwareVersion": "2.221",
-                "uploaderID": "3b9e71f3f8e276e389065e70026fb905901f671e"
-            },
-            "message": {
-                "BodyCount": 15,
-                "NonBodyCount": 59,
-                "StarPos": [
-                    51.40625,
-                    -54.40625,
-                    -30.5
-                ],
-                "SystemAddress": 1458309141194,
-                "SystemName": "Eurybia",
-                "event": "FSSDiscoveryScan",
-                "horizons": true,
-                "odyssey": true,
-                "timestamp": "2025-08-07T18:25:02Z"
-            }
-        }
-        """
-    )
-
-    assert_that(
-        system_repository.get_system_by_name("Eurybia"),
-        equal_to(
-            System(
-                address=1458309141194,
-                name="Eurybia",
-                position=Point3D(51.40625, -54.40625, -30.5),
-            ),
-        ),
-    )
-
-
-def test_powers_updated(
-    commodity_repository: PsycopgCommodityRepository,
-    system_repository: PsycopgSystemRepository,
-    market_repository: PsycopgMarketRepository,
-    message_handler: MessageHandler,
-    event_bus: EventBus,
-):
-    system_repository.create(
-        System(address=1, name="system", position=Point3D(0, 0, 0))
-    )
-    market_repository.create(
-        Market(
-            system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
-        )
-    )
-    _writer = CommodityController(
-        event_bus, commodity_repository, market_repository, system_repository
-    )
-    message_handler.process_message(
-        """
-        {
-            "$schemaRef": "https://eddn.edcd.io/schemas/fssdiscoveryscan/1",
-            "header": {
-                "gamebuild": "r316268/r0 ",
-                "gameversion": "4.1.3.0",
-                "gatewayTimestamp": "2025-08-07T18:25:09.281149Z",
-                "softwareName": "EDO Materials Helper",
-                "softwareVersion": "2.221",
-                "uploaderID": "3b9e71f3f8e276e389065e70026fb905901f671e"
-            },
-            "message": {
-                "BodyCount": 15,
-                "NonBodyCount": 59,
-                "StarPos": [
-                    51.40625,
-                    -54.40625,
-                    -30.5
-                ],
-                "SystemAddress": 1458309141194,
-                "SystemName": "Eurybia",
-                "event": "FSSDiscoveryScan",
-                "horizons": true,
-                "odyssey": true,
-                "timestamp": "2025-08-07T18:25:02Z"
-            }
-        }
-        """
-    )
-
-    assert_that(
-        system_repository.get_system_by_name("Eurybia"),
-        equal_to(
-            System(
-                address=1458309141194,
-                name="Eurybia",
-                position=Point3D(51.40625, -54.40625, -30.5),
             ),
         ),
     )

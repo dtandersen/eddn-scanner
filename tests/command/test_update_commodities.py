@@ -1,7 +1,10 @@
 from datetime import datetime, timezone
 from hamcrest import assert_that, equal_to
 import pytest
-from scanner.command.update_commodities import UpdateCommodities, AddCommodityRequest
+from scanner.command.update_commodities import (
+    UpdateCommodities,
+    UpdateCommoditiesRequest,
+)
 
 from scanner.entity.commodity import Commodity
 from scanner.entity.market import Market
@@ -33,7 +36,7 @@ def test_commodity_is_added(
         market_id=1, system_address=1, name="Test Station", last_updated=None
     )
     timestamp = datetime.now()
-    request = AddCommodityRequest(
+    request = UpdateCommoditiesRequest(
         market_id=1,
         station="Test Station",
         system="Test System",
@@ -79,7 +82,7 @@ def test_multiple_commodities_added(
     )
 
     timestamp = datetime.now()
-    request = AddCommodityRequest(
+    request = UpdateCommoditiesRequest(
         market_id=1,
         station="Test Station",
         system="Test System",
@@ -146,7 +149,7 @@ def test_previous_market_prices_are_overwritten(
     )
 
     timestamp = datetime.now(tz=timezone.utc)
-    request = AddCommodityRequest(
+    request = UpdateCommoditiesRequest(
         market_id=1,
         station="Test Station",
         system="Test System",
@@ -193,7 +196,7 @@ def test_add_market_if_system_exists(
     test_facade.given_system(address=1, name="System", position=Point3D(0, 0, 0))
 
     timestamp = datetime.now(tz=timezone.utc)
-    request = AddCommodityRequest(
+    request = UpdateCommoditiesRequest(
         market_id=1,
         station="ABC-123",
         system="System",
@@ -267,7 +270,7 @@ def test_dont_add_commodities_if_market_doesnt_exist(
     commodity_repository: PsycopgCommodityRepository,
 ):
     timestamp = datetime.now()
-    request = AddCommodityRequest(
+    request = UpdateCommoditiesRequest(
         market_id=1,
         station="Unknown",
         system="Unknown",
@@ -306,7 +309,7 @@ def test_docking_access_is_updated(
     )
 
     timestamp = datetime.now(tz=timezone.utc)
-    request = AddCommodityRequest(
+    request = UpdateCommoditiesRequest(
         market_id=1,
         station="ABC-123",
         system="System",
@@ -355,7 +358,7 @@ def test_station_type_is_updated(
     )
 
     timestamp = datetime.now(tz=timezone.utc)
-    request = AddCommodityRequest(
+    request = UpdateCommoditiesRequest(
         market_id=1,
         station="ABC-123",
         system="System",

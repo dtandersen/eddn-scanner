@@ -9,7 +9,7 @@ from scanner.repo.system_repository import SystemRepository
 
 
 @dataclass
-class AddCommodityRequest:
+class UpdateCommoditiesRequest:
     market_id: int
     timestamp: datetime
     system: str
@@ -32,7 +32,7 @@ class UpdateCommodities:
         self.market_repository = market_repository
         self.system_repository = system_repository
 
-    def execute(self, request: AddCommodityRequest):
+    def execute(self, request: UpdateCommoditiesRequest):
         self.log.info(f"Updating commodities for {request.system}/{request.station}")
         try:
             market = self.market_repository.get_market(request.market_id)
