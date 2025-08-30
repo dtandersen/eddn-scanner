@@ -1,7 +1,12 @@
+import json
+import logging
 from typing import Callable, Final, Generic, List, TypeVar
+
+from dacite import from_dict
 
 from scanner.event.commodity import CommoditiesEvent
 from scanner.event.discovery import DiscoveryEvent
+from scanner.event.fsd_jump import FSDJumpEvent
 
 
 T = TypeVar("T")
@@ -36,3 +41,17 @@ class EventBus:
     def __init__(self):
         self.commodities: Final = Delegates[CommoditiesEvent]()
         self.discovery: Final = Delegates[DiscoveryEvent]()
+        self.fsd_jump: Final = Delegates[FSDJumpEvent]()
+
+
+class MessageHandler:
+    def __init__(self, event_bus: EventBus):
+        self._log = logging.getLogger(__name__)
+        self._event_bus = event_bus
+
+    def process_message(self, message: str):
+        json_msg = json.loads(message)
+        event_type = json_msg.get("message", {}).get("event")
+        if event_type == "FSDJump":
+            msg = from_dict(FSDJumpEvent, json_msg)
+            self._event_bus.fsd_jump.publish(msg)

@@ -12,7 +12,7 @@ from scanner.event.event_handler import EventBus
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
-from scanner.scanner2 import EddnScannerV2
+from scanner.scanner import EddnScannerV2
 
 
 def get_connection():

@@ -23,30 +23,8 @@ class EddnScannerV2:
         self._event_handler = event_handler
         self._endpoint = endpoint
         self._timeout = timeout
-        # self._commodities: List[EventHandler[CommoditiesEvent]] = []
-        # self._docking: List[EventHandler[DockingEvent]] = []
-        # self._signals: List[EventHandler[SignalDiscoveredEvent]] = []
         self._log = logging.getLogger(__name__)
         self._config = Config(strict=True)
-        # self._schema_handlers: Dict[str, Callable[[Dict[str, Any]], None]] = {
-        #     "https://eddn.edcd.io/schemas/approachsettlement/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/codexentry/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/commodity/3": self._commodity_handler,
-        #     "https://eddn.edcd.io/schemas/dockingdenied/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/dockinggranted/1": self._docking_handler,
-        #     "https://eddn.edcd.io/schemas/fcmaterials_capi/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/fcmaterials_journal/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/fssallbodiesfound/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/fssbodysignals/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/fssdiscoveryscan/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/fsssignaldiscovered/1": self._signal_handler,
-        #     "https://eddn.edcd.io/schemas/journal/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/navbeaconscan/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/navroute/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/outfitting/2": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/scanbarycentre/1": self._null_handler,
-        #     "https://eddn.edcd.io/schemas/shipyard/2": self._null_handler,
-        # }
 
     async def start(self):
         context = zmq.asyncio.Context()

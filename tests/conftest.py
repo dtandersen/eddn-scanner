@@ -6,10 +6,12 @@ from yoyo import get_backend, read_migrations  # type: ignore
 import os
 from testcontainers.postgres import PostgresContainer  # type: ignore
 
+from scanner.event.event_handler import EventBus, MessageHandler
+from scanner.event.power_controller import PowerController
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.power_repository import PsycopgPowerRepository
-from scanner.repo.system_repository import PsycopgSystemRepository
+from scanner.repo.system_repository import PsycopgSystemRepository, SystemRepository
 from tests.facade import TestFacade  # type: ignore
 
 
@@ -132,3 +134,22 @@ def test_facade(
         market_repository=market_repository,
         commodity_repository=commodity_repository,
     )
+
+
+@pytest.fixture
+def event_bus():
+    return EventBus()
+
+
+@pytest.fixture
+def message_handler(event_bus: EventBus):
+    return MessageHandler(event_bus)
+
+
+@pytest.fixture
+def power_controller(
+    event_bus: EventBus,
+    system_repository: SystemRepository,
+    power_repository: PsycopgPowerRepository,
+):
+    return PowerController(event_bus, system_repository, power_repository)
