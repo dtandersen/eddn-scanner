@@ -5,11 +5,8 @@ import logging
 # from scanner import scanner
 from scanner.command.command_factory import CommandFactory
 from scanner.command.update_commodities import UpdateCommoditiesRequest
-from scanner.command.update_system import UpdateSystemRequest
 from scanner.entity.commodity import Commodity
-from scanner.entity.system import Point3D
 from scanner.event.commodity import CommoditiesEvent, CommodityEvent
-from scanner.event.discovery import DiscoveryEvent
 from scanner.event.event_handler import EventBus
 
 
@@ -22,7 +19,7 @@ class CommodityController:
         command_factory: CommandFactory,
     ):
         events.commodities.subscribe(self.on_commodities)
-        events.discovery.subscribe(self.on_discovery)
+        # events.discovery.subscribe(self.on_discovery)
 
         self.command_factory = command_factory
 
@@ -47,21 +44,21 @@ class CommodityController:
             )
         )
 
-    def on_discovery(self, event: DiscoveryEvent):
-        command = self.command_factory.update_system()
-        command.execute(
-            UpdateSystemRequest(
-                system_address=event.message.SystemAddress,
-                system_name=event.message.SystemName,
-                position=Point3D(
-                    event.message.StarPos[0],
-                    event.message.StarPos[1],
-                    event.message.StarPos[2],
-                ),
-                state=None,
-                powers=[],
-            )
-        )
+    # def on_discovery(self, event: DiscoveryEvent):
+    #     command = self.command_factory.update_system()
+    #     command.execute(
+    #         UpdateSystemRequest(
+    #             system_address=event.message.SystemAddress,
+    #             system_name=event.message.SystemName,
+    #             position=Point3D(
+    #                 event.message.StarPos[0],
+    #                 event.message.StarPos[1],
+    #                 event.message.StarPos[2],
+    #             ),
+    #             state=None,
+    #             powers=[],
+    #         )
+    #     )
 
     def map_to_commodity(self, event: CommodityEvent, market_id: int) -> Commodity:
         return Commodity(
@@ -72,10 +69,3 @@ class CommodityController:
             supply=event.stock,
             demand=event.demand,
         )
-
-
-def fix_schema_ref(key: str) -> str:
-    if key == "schemaRef":
-        return "$schemaRef"
-    else:
-        return key

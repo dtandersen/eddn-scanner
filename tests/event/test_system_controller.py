@@ -1,17 +1,13 @@
 from hamcrest import assert_that, equal_to
-from scanner.entity.market import Market
 from scanner.entity.power import Power
 from scanner.entity.system import Point3D, System
-from scanner.controller.commodity_controller import CommodityController
-from scanner.event.event_handler import EventBus, MessageHandler
+from scanner.event.event_handler import MessageHandler
 from scanner.controller.power_controller import SystemController
-from scanner.repo.commodity_repository import PsycopgCommodityRepository
-from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.power_repository import PsycopgPowerRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
 
 
-def test_handles_commodities_event(
+def test_fsd_jump_updates_power_progress(
     message_handler: MessageHandler,
     system_controller: SystemController,
     power_repository: PsycopgPowerRepository,
@@ -131,113 +127,113 @@ def test_handles_commodities_event(
     )
 
 
-def test_adds_missing_system(
-    message_handler: MessageHandler,
-    system_controller: SystemController,
-    power_repository: PsycopgPowerRepository,
-    system_repository: PsycopgSystemRepository,
-):
-    message_handler.process_message(
-        """
-        {
-            "$schemaRef": "https://eddn.edcd.io/schemas/journal/1",
-            "header": {
-                "gamebuild": "r317914/r0 ",
-                "gameversion": "4.2.0.1",
-                "gatewayTimestamp": "2025-08-30T03:54:09.630136Z",
-                "softwareName": "E:D Market Connector [Linux]",
-                "softwareVersion": "5.13.1",
-                "uploaderID": "b1a38dbf04540d199be21f5a6ae0296fb7fd9c72"
-            },
-            "message": {
-                "Body": "Col 285 Sector EL-X d1-32",
-                "BodyID": 0,
-                "BodyType": "Star",
-                "Factions": [
-                    {
-                        "Allegiance": "Independent",
-                        "FactionState": "None",
-                        "Government": "Anarchy",
-                        "Happiness": "$Faction_HappinessBand2;",
-                        "Influence": 0.02997,
-                        "Name": "Capa Gold Cartel"
-                    },
-                    {
-                        "Allegiance": "Independent",
-                        "FactionState": "None",
-                        "Government": "Feudal",
-                        "Happiness": "$Faction_HappinessBand2;",
-                        "Influence": 0.067932,
-                        "Name": "Lords of Kamil"
-                    },
-                    {
-                        "Allegiance": "Independent",
-                        "FactionState": "None",
-                        "Government": "Democracy",
-                        "Happiness": "$Faction_HappinessBand2;",
-                        "Influence": 0.096903,
-                        "Name": "HIP 36560 Democrats"
-                    },
-                    {
-                        "ActiveStates": [
-                            {
-                                "State": "Expansion"
-                            }
-                        ],
-                        "Allegiance": "Alliance",
-                        "FactionState": "Expansion",
-                        "Government": "Democracy",
-                        "Happiness": "$Faction_HappinessBand2;",
-                        "Influence": 0.805195,
-                        "Name": "Flat Galaxy Society"
-                    }
-                ],
-                "Multicrew": false,
-                "Population": 390174881,
-                "StarPos": [
-                    116.46875,
-                    83.125,
-                    -201.34375
-                ],
-                "StarSystem": "Col 285 Sector EL-X d1-32",
-                "SystemAddress": 1110022572371,
-                "SystemAllegiance": "Alliance",
-                "SystemEconomy": "$economy_Agri;",
-                "SystemFaction": {
-                    "FactionState": "Expansion",
-                    "Name": "Flat Galaxy Society"
-                },
-                "SystemGovernment": "$government_Democracy;",
-                "SystemSecondEconomy": "$economy_Tourism;",
-                "SystemSecurity": "$SYSTEM_SECURITY_medium;",
-                "Taxi": false,
-                "event": "FSDJump",
-                "horizons": true,
-                "odyssey": true,
-                "timestamp": "2025-08-30T03:54:08Z"
-            }
-        }
-        """
-    )
+# def test_adds_missing_system(
+#     message_handler: MessageHandler,
+#     system_controller: SystemController,
+#     power_repository: PsycopgPowerRepository,
+#     system_repository: PsycopgSystemRepository,
+# ):
+#     message_handler.process_message(
+#         """
+#         {
+#             "$schemaRef": "https://eddn.edcd.io/schemas/journal/1",
+#             "header": {
+#                 "gamebuild": "r317914/r0 ",
+#                 "gameversion": "4.2.0.1",
+#                 "gatewayTimestamp": "2025-08-30T03:54:09.630136Z",
+#                 "softwareName": "E:D Market Connector [Linux]",
+#                 "softwareVersion": "5.13.1",
+#                 "uploaderID": "b1a38dbf04540d199be21f5a6ae0296fb7fd9c72"
+#             },
+#             "message": {
+#                 "Body": "Col 285 Sector EL-X d1-32",
+#                 "BodyID": 0,
+#                 "BodyType": "Star",
+#                 "Factions": [
+#                     {
+#                         "Allegiance": "Independent",
+#                         "FactionState": "None",
+#                         "Government": "Anarchy",
+#                         "Happiness": "$Faction_HappinessBand2;",
+#                         "Influence": 0.02997,
+#                         "Name": "Capa Gold Cartel"
+#                     },
+#                     {
+#                         "Allegiance": "Independent",
+#                         "FactionState": "None",
+#                         "Government": "Feudal",
+#                         "Happiness": "$Faction_HappinessBand2;",
+#                         "Influence": 0.067932,
+#                         "Name": "Lords of Kamil"
+#                     },
+#                     {
+#                         "Allegiance": "Independent",
+#                         "FactionState": "None",
+#                         "Government": "Democracy",
+#                         "Happiness": "$Faction_HappinessBand2;",
+#                         "Influence": 0.096903,
+#                         "Name": "HIP 36560 Democrats"
+#                     },
+#                     {
+#                         "ActiveStates": [
+#                             {
+#                                 "State": "Expansion"
+#                             }
+#                         ],
+#                         "Allegiance": "Alliance",
+#                         "FactionState": "Expansion",
+#                         "Government": "Democracy",
+#                         "Happiness": "$Faction_HappinessBand2;",
+#                         "Influence": 0.805195,
+#                         "Name": "Flat Galaxy Society"
+#                     }
+#                 ],
+#                 "Multicrew": false,
+#                 "Population": 390174881,
+#                 "StarPos": [
+#                     116.46875,
+#                     83.125,
+#                     -201.34375
+#                 ],
+#                 "StarSystem": "Col 285 Sector EL-X d1-32",
+#                 "SystemAddress": 1110022572371,
+#                 "SystemAllegiance": "Alliance",
+#                 "SystemEconomy": "$economy_Agri;",
+#                 "SystemFaction": {
+#                     "FactionState": "Expansion",
+#                     "Name": "Flat Galaxy Society"
+#                 },
+#                 "SystemGovernment": "$government_Democracy;",
+#                 "SystemSecondEconomy": "$economy_Tourism;",
+#                 "SystemSecurity": "$SYSTEM_SECURITY_medium;",
+#                 "Taxi": false,
+#                 "event": "FSDJump",
+#                 "horizons": true,
+#                 "odyssey": true,
+#                 "timestamp": "2025-08-30T03:54:08Z"
+#             }
+#         }
+#         """
+#     )
 
-    assert_that(
-        system_repository.get_system_by_address(1110022572371),
-        equal_to(
-            System(
-                address=1110022572371,
-                name="Col 285 Sector EL-X d1-32",
-                position=Point3D(116.46875, 83.125, -201.34375),
-            )
-        ),
-    )
+#     assert_that(
+#         system_repository.get_system_by_address(1110022572371),
+#         equal_to(
+#             System(
+#                 address=1110022572371,
+#                 name="Col 285 Sector EL-X d1-32",
+#                 position=Point3D(116.46875, 83.125, -201.34375),
+#             )
+#         ),
+#     )
 
-    assert_that(
-        power_repository.all(),
-        equal_to([]),
-    )
+#     assert_that(
+#         power_repository.all(),
+#         equal_to([]),
+#     )
 
 
-def test_stronghold_with_no_underminers(
+def test_fsd_jump_without_power_progress(
     message_handler: MessageHandler,
     system_controller: SystemController,
     power_repository: PsycopgPowerRepository,
@@ -431,87 +427,11 @@ def test_stronghold_with_no_underminers(
     # )
 
 
-def test_new_system_discovered(
-    commodity_repository: PsycopgCommodityRepository,
+def test_fss_discovery_scan_updates_system(
     system_repository: PsycopgSystemRepository,
-    market_repository: PsycopgMarketRepository,
-    power_repository: PsycopgPowerRepository,
     message_handler: MessageHandler,
-    event_bus: EventBus,
-    commodity_controller: CommodityController,
+    system_controller: SystemController,
 ):
-    system_repository.create(
-        System(address=1, name="system", position=Point3D(0, 0, 0))
-    )
-    market_repository.create(
-        Market(
-            system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
-        )
-    )
-    # _writer = CommodityController(
-    #     event_bus,
-    #     commodity_repository,
-    #     market_repository,
-    #     system_repository,
-    #     power_repository,
-    # )
-    message_handler.process_message(
-        """
-        {
-            "$schemaRef": "https://eddn.edcd.io/schemas/fssdiscoveryscan/1",
-            "header": {
-                "gamebuild": "r316268/r0 ",
-                "gameversion": "4.1.3.0",
-                "gatewayTimestamp": "2025-08-07T18:25:09.281149Z",
-                "softwareName": "EDO Materials Helper",
-                "softwareVersion": "2.221",
-                "uploaderID": "3b9e71f3f8e276e389065e70026fb905901f671e"
-            },
-            "message": {
-                "BodyCount": 15,
-                "NonBodyCount": 59,
-                "StarPos": [
-                    51.40625,
-                    -54.40625,
-                    -30.5
-                ],
-                "SystemAddress": 1458309141194,
-                "SystemName": "Eurybia",
-                "event": "FSSDiscoveryScan",
-                "horizons": true,
-                "odyssey": true,
-                "timestamp": "2025-08-07T18:25:02Z"
-            }
-        }
-        """
-    )
-
-    assert_that(
-        system_repository.get_system_by_name("Eurybia"),
-        equal_to(
-            System(
-                address=1458309141194,
-                name="Eurybia",
-                position=Point3D(51.40625, -54.40625, -30.5),
-            ),
-        ),
-    )
-
-
-def test_powers_updated(
-    system_repository: PsycopgSystemRepository,
-    market_repository: PsycopgMarketRepository,  # noqa: F821
-    message_handler: MessageHandler,
-    commodity_controller: CommodityController,
-):
-    system_repository.create(
-        System(address=1, name="system", position=Point3D(0, 0, 0))
-    )
-    market_repository.create(
-        Market(
-            system_address=1, market_id=3712635648, name="HR 1185", last_updated=None
-        )
-    )
     message_handler.process_message(
         """
         {

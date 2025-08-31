@@ -3,6 +3,7 @@ import logging
 import asyncio
 import os
 import sys
+from typing import List
 
 from dotenv import load_dotenv
 import psycopg
@@ -33,12 +34,20 @@ def get_connection():
 
 async def main():
     locale.setlocale(locale.LC_ALL, "")
-    file_handler = logging.FileHandler("scanner.log")
-    # file_handler.addFilter(DuplicateFilter())
-    file_handler.setLevel(logging.DEBUG)
+    load_dotenv()
+    # config = dotenv_values()
+    handlers: List[logging.Handler] = []
+    scanner_log = os.getenv("SCANNER_LOG", "true")
+    print(f"SCANNER_LOG={scanner_log}")
+    if scanner_log != "false":
+        file_handler = logging.FileHandler("scanner.log")
+        # file_handler.addFilter(DuplicateFilter())
+        file_handler.setLevel(logging.DEBUG)
+        handlers.append(file_handler)
 
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(logging.INFO)
+    handlers.append(stream_handler)
     # stream_handler.addFilter(DuplicateFilter())
 
     logging.basicConfig(
@@ -46,9 +55,8 @@ async def main():
         format="%(asctime)s %(levelname)7s  %(message)s",
         datefmt="%H:%M:%S",
         # format="%(asctime)s %(levelname)s %(name)s - %(message)s",
-        handlers=[file_handler, stream_handler],
+        handlers=handlers,
     )
-    load_dotenv()
     bus = EventBus()
     connection = get_connection()
     command_factory = CommandFactory(
