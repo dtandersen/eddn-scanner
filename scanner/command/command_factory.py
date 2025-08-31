@@ -1,3 +1,5 @@
+from scanner.command.get_system import GetSystem
+from scanner.command.list_systems import ListSystems
 from scanner.command.update_commodities import UpdateCommodities
 from scanner.command.update_system import UpdateSystem
 from scanner.repo.commodity_repository import CommodityRepository
@@ -29,5 +31,15 @@ class CommandFactory:
         return UpdateCommodities(
             commodity_repository=self.commodity_repository,
             market_repository=self.market_repository,
+            system_repository=self.system_repository,
+        )
+
+    def get_system(self):
+        return GetSystem(
+            system_repository=self.system_repository,
+        )
+
+    def list_systems(self):
+        return ListSystems(
             system_repository=self.system_repository,
         )

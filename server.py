@@ -4,9 +4,11 @@ import os
 from typing import List
 from dotenv import load_dotenv
 from fastapi import FastAPI
-
+from fastapi.middleware.cors import CORSMiddleware
 from scan import get_connection
 from scanner.command.command_factory import CommandFactory
+from scanner.command.get_system import GetSystemRequest
+from scanner.command.list_systems import ListSystemsRequest
 from scanner.event.event_handler import EventBus
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
@@ -63,7 +65,27 @@ command_factory = CommandFactory(
 
 app = FastAPI()
 
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,  # Set to True if your frontend sends cookies or authorization headers
+    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+
+@app.get("/systems/{address}")
+def get_system(address: int):
+    request = GetSystemRequest(system_address=address)
+    command = command_factory.get_system()
+    system = command.execute(request)
+    return system
+
+
+@app.get("/systems")
+def list_systems(name: str):
+    request = ListSystemsRequest(name=name)
+    command = command_factory.list_systems()
+    systems = command.execute(request)
+    return systems

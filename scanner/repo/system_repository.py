@@ -25,6 +25,10 @@ class SystemRepository(metaclass=ABCMeta):
     def get_system_by_address(self, address: int) -> System:
         pass
 
+    @abstractmethod
+    def find_system_by_name(self, name: str) -> List[System]:
+        pass
+
 
 @dataclass
 class SystemRow:
@@ -91,3 +95,29 @@ class PsycopgSystemRepository(SystemRepository):
                 name=row.name,
                 position=Point3D(x=float(row.x), y=float(row.y), z=float(row.z)),
             )
+
+    def find_system_by_name(self, name: str) -> List[System]:
+        with self.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT *
+                FROM system
+                WHERE lower(name) like %s
+                LIMIT 10
+                """,
+                (f"%{name.lower()}%",),
+            )
+            rows = cursor.fetchall()
+            systems = [PsycopgSystemRepository.map_row_to_system(row) for row in rows]
+            return systems
+
+    def cursor(self):
+        return self.connection.cursor(row_factory=class_row(SystemRow))
+
+    @staticmethod
+    def map_row_to_system(row: SystemRow) -> System:
+        return System(
+            address=int(row.address),
+            name=row.name,
+            position=Point3D(x=float(row.x), y=float(row.y), z=float(row.z)),
+        )

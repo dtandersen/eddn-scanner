@@ -12,3 +12,17 @@ services:
       options:
         max-size: "10m"
         max-file: "1"
+  web:
+    build: .
+    env_file:
+    - .env.docker
+    # volumes:
+    # - yoyo.ini:/app/yoyo.ini
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
+    command: uv run fastapi dev server.py --host 0.0.0.0 --port 8000
+    ports:
+    - "9988:8000"
