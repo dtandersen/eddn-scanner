@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import locale
 import logging
 import os
@@ -8,7 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from scan import get_connection
 from scanner.command.command_factory import CommandFactory
 from scanner.command.get_system import GetSystemRequest
+from scanner.command.list_markets import ListMarketsRequest
 from scanner.command.list_systems import ListSystemsRequest
+from scanner.dto.market import MarketDto
 from scanner.event.event_handler import EventBus
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
@@ -89,3 +92,21 @@ def list_systems(name: str):
     command = command_factory.list_systems()
     systems = command.execute(request)
     return systems
+
+
+@dataclass
+class ListMarketsResponse2:
+    markets: List[MarketDto]
+
+
+@dataclass
+class ListMarketsResponse:
+    result: ListMarketsResponse2
+
+
+@app.get("/markets")
+def list_markets(system: int) -> ListMarketsResponse:
+    request = ListMarketsRequest(system=system)
+    command = command_factory.list_markets()
+    result = command.execute(request)
+    return ListMarketsResponse(result=ListMarketsResponse2(markets=result.markets))

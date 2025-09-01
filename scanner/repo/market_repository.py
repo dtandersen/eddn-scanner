@@ -1,11 +1,12 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from psycopg import Connection
 from psycopg.rows import class_row
 
+from scanner.dto.market import MarketDto
 from scanner.entity.market import Market
 
 
@@ -34,6 +35,12 @@ class MarketRepository(metaclass=ABCMeta):
     def update_station_type(self, market_id: int, station_type: str):
         pass
 
+    @abstractmethod
+    def find_markets_by_system(
+        self, system_id: int, distance: Optional[int] = None
+    ) -> List[MarketDto]:
+        pass
+
 
 @dataclass
 class MarketRow:
@@ -43,6 +50,15 @@ class MarketRow:
     last_update: datetime | None
     station_type: str | None
     docking_access: str | None
+
+
+@dataclass
+class MarketDtoRow:
+    market_id: int
+    system_address: int
+    market_name: str
+    system_name: str
+    station_type: str | None
 
 
 class ResourceNotFoundError(Exception):
@@ -122,3 +138,34 @@ class PsycopgMarketRepository(MarketRepository):
                 (station_type, market_id),
             )
             self.connection.commit()
+
+    def find_markets_by_system(
+        self, system_id: int, distance: Optional[int] = None
+    ) -> List[MarketDto]:
+        sql = """
+            SELECT
+                m.market_id,
+                m.system_address,
+                m.name as market_name,
+                s.name as system_name,
+                m.station_type
+            FROM market as m
+            JOIN system as s on m.system_address = s.address
+            WHERE system_address = %s
+            """
+        with self.connection.cursor(row_factory=class_row(MarketDtoRow)) as cursor:
+            cursor.execute(
+                sql,
+                (system_id,),
+            )
+            rows = cursor.fetchall()
+            return [
+                MarketDto(
+                    market_id=int(row.market_id),
+                    system_address=int(row.system_address),
+                    market_name=row.market_name,
+                    system_name=row.system_name,
+                    landing_pad="?",
+                )
+                for row in rows
+            ]
