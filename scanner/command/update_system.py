@@ -1,12 +1,16 @@
 from dataclasses import dataclass
+
+from datetime import datetime
 import logging
 from typing import List, Optional
 
 from scanner.entity.power import Power
 from scanner.entity.system import Point3D, System
+from scanner.entity.system_state import SystemState
 from scanner.repo.market_repository import ResourceNotFoundError
 from scanner.repo.power_repository import PsycopgPowerRepository
 from scanner.repo.system_repository import SystemRepository
+from scanner.repo.system_state_repository import SystemStateRepository
 
 
 @dataclass
@@ -15,7 +19,9 @@ class UpdateSystemRequest:
     system_name: str
     position: Point3D
     state: Optional[str]
+    power: Optional[str]
     powers: List[Power]
+    timestamp: datetime
 
 
 class UpdateSystem:
@@ -25,9 +31,11 @@ class UpdateSystem:
         self,
         system_repository: SystemRepository,
         power_repository: PsycopgPowerRepository,
+        system_state_repository: SystemStateRepository,
     ):
         self.system_repository = system_repository
         self.power_repository = power_repository
+        self.system_state_repository = system_state_repository
 
     def execute(self, request: UpdateSystemRequest):
         self.log.info(f"Updating system {request.system_name}")
@@ -47,3 +55,13 @@ class UpdateSystem:
         self.power_repository.delete_progress(request.system_address)
         for power in request.powers:
             self.power_repository.create(power)
+
+        if request.state is not None:
+            self.system_state_repository.update_system_state(
+                SystemState(
+                    system_id=request.system_address,
+                    state=request.state,
+                    power=request.power,
+                    timestamp=request.timestamp,
+                )
+            )

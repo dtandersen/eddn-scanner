@@ -17,6 +17,7 @@ from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.power_repository import PsycopgPowerRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
+from scanner.repo.system_state_repository import SystemStateRepository
 
 
 # @app.get("/items/{item_id}")
@@ -54,6 +55,7 @@ command_factory = CommandFactory(
     PsycopgMarketRepository(connection),
     PsycopgCommodityRepository(connection),
     PsycopgPowerRepository(connection),
+    SystemStateRepository(connection),
 )
 # _commodity_controller = CommodityController(
 #     bus,

@@ -12,7 +12,7 @@ services:
       options:
         max-size: "10m"
         max-file: "1"
-  web:
+  api:
     build: .
     env_file:
     - .env.docker

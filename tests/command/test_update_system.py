@@ -1,39 +1,71 @@
+import datetime
 from hamcrest import assert_that, equal_to
 import pytest
 
+from scanner.command.command_factory import CommandFactory
 from scanner.command.update_system import UpdateSystem, UpdateSystemRequest
 from scanner.entity.power import Power
 from scanner.entity.system import Point3D, System
-from scanner.event.event_handler import MessageHandler
-from scanner.controller.power_controller import SystemController
+from scanner.entity.system_state import SystemState
 from scanner.repo.power_repository import PsycopgPowerRepository
-from scanner.repo.system_repository import PsycopgSystemRepository, SystemRepository
+from scanner.repo.system_repository import SystemRepository
+from scanner.repo.system_state_repository import SystemStateRepository
 from tests.facade import TestFacade
 
 
 @pytest.fixture
 def command(
-    system_repository: SystemRepository, power_repository: PsycopgPowerRepository
+    command_factory: CommandFactory,
 ):
-    return UpdateSystem(system_repository, power_repository)
+    return command_factory.update_system()
 
 
 def test_system_is_added(
     command: UpdateSystem,
     system_repository: SystemRepository,
+    system_state_repository: SystemStateRepository,
     power_repository: PsycopgPowerRepository,
 ):
     request = UpdateSystemRequest(
         system_address=1,
         system_name="System 1",
         position=Point3D(x=1, y=2, z=3),
-        state="active",
+        state="Stronghold",
+        power="Yuri Grom",
         powers=[
             Power(system_address=1, name="Power 1", progress=0.5),
             Power(system_address=1, name="Power 2", progress=0.8),
         ],
+        timestamp=datetime.datetime.fromtimestamp(1234567890, datetime.timezone.utc),
     )
     command.execute(request)
+
+    system = system_repository.get_system_by_address(1)
+    assert_that(
+        system,
+        equal_to(
+            System(
+                address=1,
+                name="System 1",
+                position=Point3D(x=1, y=2, z=3),
+            )
+        ),
+    )
+
+    system_state = system_state_repository.get_system_state(1)
+    assert_that(
+        system_state,
+        equal_to(
+            SystemState(
+                system_id=1,
+                state="Stronghold",
+                power="Yuri Grom",
+                timestamp=datetime.datetime.fromtimestamp(
+                    1234567890, datetime.timezone.utc
+                ),
+            ),
+        ),
+    )
 
     powers = power_repository.get_system_by_address(1)
 
@@ -48,45 +80,62 @@ def test_system_is_added(
     )
 
 
-def test_overwrites_previous_power_progress(
+def test_system_state_is_updated(
     command: UpdateSystem,
-    message_handler: MessageHandler,
-    system_controller: SystemController,
     power_repository: PsycopgPowerRepository,
-    system_repository: PsycopgSystemRepository,
+    system_state_repository: SystemStateRepository,
     test_facade: TestFacade,
 ):
-    system_repository.create(
-        System(
-            address=1,
-            name="System 1",
-            position=Point3D(x=3.78125, y=-147.0625, z=-33.21875),
-        )
+    test_facade.given_system_state(
+        1, "Unoccupied", None, datetime.datetime.fromtimestamp(1234567890)
     )
-    system_repository.create(
-        System(
-            address=2,
-            name="System 2",
-            position=Point3D(x=3.78125, y=-147.0625, z=-33.21875),
-        )
+    test_facade.given_system(
+        address=1,
+        name="System 1",
+        position=Point3D(x=3.78125, y=-147.0625, z=-33.21875),
     )
-    power_repository.create(Power(system_address=1, name="Power 1", progress=0.2))
-    power_repository.create(Power(system_address=1, name="Power 2", progress=0.3))
-    power_repository.create(Power(system_address=1, name="Power 3", progress=0.5))
-    power_repository.create(Power(system_address=2, name="Power 1", progress=0.5))
-    power_repository.create(Power(system_address=2, name="Power 2", progress=0.5))
+    test_facade.given_system(
+        address=2,
+        name="System 2",
+        position=Point3D(x=3.78125, y=-147.0625, z=-33.21875),
+    )
+
+    test_facade.given_system_power(system_address=1, name="Power 1", progress=0.2)
+    test_facade.given_system_power(system_address=1, name="Power 2", progress=0.3)
+    test_facade.given_system_power(system_address=1, name="Power 3", progress=0.5)
+    test_facade.given_system_power(system_address=2, name="Power 1", progress=0.5)
+    test_facade.given_system_power(system_address=2, name="Power 2", progress=0.5)
 
     command.execute(
         UpdateSystemRequest(
             system_address=1,
             system_name="System 1",
             position=Point3D(x=1, y=2, z=3),
-            state="active",
+            state="Stronghold",
+            power="Yuri Grom",
             powers=[
                 Power(system_address=1, name="Power 1", progress=0.4),
                 Power(system_address=1, name="Power 2", progress=0.6),
             ],
+            timestamp=datetime.datetime.fromtimestamp(
+                2234567890, datetime.timezone.utc
+            ),
         )
+    )
+
+    system_state = system_state_repository.get_system_state(1)
+    assert_that(
+        system_state,
+        equal_to(
+            SystemState(
+                system_id=1,
+                state="Stronghold",
+                power="Yuri Grom",
+                timestamp=datetime.datetime.fromtimestamp(
+                    2234567890, datetime.timezone.utc
+                ),
+            )
+        ),
     )
 
     assert_that(
@@ -121,7 +170,9 @@ def test_system_is_added2(
         system_name="New System",
         position=Point3D(1, 1, 1),
         state=None,
+        power=None,
         powers=[],
+        timestamp=datetime.datetime.fromtimestamp(1234567890),
     )
     command.execute(request)
 
@@ -153,6 +204,8 @@ def test_existing_system_is_ignored(
         position=Point3D(1, 1, 1),
         state=None,
         powers=[],
+        power=None,
+        timestamp=datetime.datetime.fromtimestamp(1234567890),
     )
     command.execute(request)
 

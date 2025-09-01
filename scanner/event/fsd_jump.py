@@ -10,10 +10,12 @@ class Progress:
 
 @dataclass
 class FSDJumpEventMessage:
+    timestamp: str
     SystemAddress: int
     StarSystem: str
     StarPos: List[float]
     PowerplayState: Optional[str]
+    ControllingPower: Optional[str]
     PowerplayConflictProgress: List[Progress] = field(default_factory=lambda: [])
 
 

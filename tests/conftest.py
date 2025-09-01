@@ -14,6 +14,7 @@ from scanner.repo.commodity_repository import PsycopgCommodityRepository
 from scanner.repo.market_repository import PsycopgMarketRepository
 from scanner.repo.power_repository import PsycopgPowerRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
+from scanner.repo.system_state_repository import SystemStateRepository
 from tests.facade import TestFacade  # type: ignore
 
 
@@ -97,6 +98,9 @@ def connection(
 
     connection.execute("truncate system cascade")
     connection.execute("truncate sys_power cascade")
+    connection.execute("truncate sys_power_state cascade")
+    connection.execute("truncate commodity cascade")
+    connection.execute("truncate market cascade")
 
     def remove_container():
         connection.close()
@@ -127,15 +131,24 @@ def market_repository(connection: psycopg.Connection):
 
 
 @pytest.fixture
+def system_state_repository(connection: psycopg.Connection):
+    return SystemStateRepository(connection)
+
+
+@pytest.fixture
 def test_facade(
     system_repository: PsycopgSystemRepository,
     market_repository: PsycopgMarketRepository,
     commodity_repository: PsycopgCommodityRepository,
-):
+    power_repository: PsycopgPowerRepository,
+    system_state_repository: SystemStateRepository,
+) -> TestFacade:
     return TestFacade(
         system_repository=system_repository,
         market_repository=market_repository,
         commodity_repository=commodity_repository,
+        power_repository=power_repository,
+        system_state_repository=system_state_repository,
     )
 
 
@@ -145,12 +158,14 @@ def command_factory(
     market_repository: PsycopgMarketRepository,
     commodity_repository: PsycopgCommodityRepository,
     power_repository: PsycopgPowerRepository,
+    system_state_repository: SystemStateRepository,
 ):
     return CommandFactory(
         system_repository=system_repository,
         market_repository=market_repository,
         commodity_repository=commodity_repository,
         power_repository=power_repository,
+        system_state_repository=system_state_repository,
     )
 
 

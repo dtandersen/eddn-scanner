@@ -6,6 +6,7 @@ from scanner.event.event import EddnEvent
 
 @dataclass
 class DiscoveryMessage:
+    timestamp: str
     SystemAddress: int
     SystemName: str
     StarPos: List[float]

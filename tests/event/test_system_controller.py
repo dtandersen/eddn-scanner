@@ -1,10 +1,13 @@
+from datetime import datetime
 from hamcrest import assert_that, equal_to
 from scanner.entity.power import Power
 from scanner.entity.system import Point3D, System
+from scanner.entity.system_state import SystemState
 from scanner.event.event_handler import MessageHandler
 from scanner.controller.power_controller import SystemController
 from scanner.repo.power_repository import PsycopgPowerRepository
 from scanner.repo.system_repository import PsycopgSystemRepository
+from scanner.repo.system_state_repository import SystemStateRepository
 
 
 def test_fsd_jump_updates_power_progress(
@@ -238,6 +241,7 @@ def test_fsd_jump_without_power_progress(
     system_controller: SystemController,
     power_repository: PsycopgPowerRepository,
     system_repository: PsycopgSystemRepository,
+    system_state_repository: SystemStateRepository,
 ):
     system_repository.create(
         System(
@@ -410,6 +414,19 @@ def test_fsd_jump_without_power_progress(
             }
         }
         """
+    )
+    system_state = system_state_repository.get_system_state(13865093899689)
+
+    assert_that(
+        system_state,
+        equal_to(
+            SystemState(
+                system_id=13865093899689,
+                state="Stronghold",
+                power="Jerome Archer",
+                timestamp=datetime.fromisoformat("2025-08-30T06:56:11Z"),
+            )
+        ),
     )
 
     # assert_that(

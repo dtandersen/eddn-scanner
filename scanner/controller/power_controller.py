@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from scanner.command.command_factory import CommandFactory
 from scanner.command.update_system import UpdateSystemRequest
@@ -34,6 +35,8 @@ class SystemController:
                 ),
                 state=None,
                 powers=[],
+                power=None,
+                timestamp=datetime.fromisoformat(event.message.timestamp),
             )
         )
 
@@ -57,5 +60,7 @@ class SystemController:
             ),
             state=event.message.PowerplayState,
             powers=powers,
+            power=event.message.ControllingPower,
+            timestamp=datetime.fromisoformat(event.message.timestamp),
         )
         command.execute(request)
