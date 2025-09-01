@@ -105,8 +105,8 @@ class ListMarketsResponse:
 
 
 @app.get("/markets")
-def list_markets(system: int) -> ListMarketsResponse:
-    request = ListMarketsRequest(system=system)
+def list_markets(system: int, distance: int = 0) -> ListMarketsResponse:
+    request = ListMarketsRequest(system=system, distance=distance)
     command = command_factory.list_markets()
     result = command.execute(request)
     return ListMarketsResponse(result=ListMarketsResponse2(markets=result.markets))

@@ -43,6 +43,7 @@ def test_returns_markets_in_system(
                         market_name="Market 1",
                         system_name="System 1",
                         landing_pad="?",
+                        distance=0,
                     )
                 ]
             )
@@ -52,15 +53,14 @@ def test_returns_markets_in_system(
 
 def test_returns_markets_within_10ly(
     command_factory: CommandFactory,
-    # power_repository: PsycopgPowerRepository,
-    market_repository: MarketRepository,
     test_facade: TestFacade,
 ):
     test_facade.given_system(1, "System 1", Point3D(0, 0, 0))
     test_facade.given_system(2, "System 2", Point3D(10, 0, 0))
+    test_facade.given_system(3, "System 2", Point3D(0, 0, 11))
     test_facade.given_market(1, 1, "Market 1")
     test_facade.given_market(2, 2, "Market 2")
-    # test_facade.given_market(2, "Market 2", "System 2", "Landing Pad 2", 200.0)
+    test_facade.given_market(3, 3, "Market 3")
 
     request = ListMarketsRequest(system=1, distance=10)
     command = command_factory.list_markets()
@@ -72,12 +72,21 @@ def test_returns_markets_within_10ly(
             ListMarketsResult(
                 markets=[
                     MarketDto(
+                        market_id=1,
+                        system_address=1,
+                        market_name="Market 1",
+                        system_name="System 1",
+                        landing_pad="?",
+                        distance=0.0,
+                    ),
+                    MarketDto(
                         market_id=2,
                         system_address=2,
                         market_name="Market 2",
                         system_name="System 2",
                         landing_pad="?",
-                    )
+                        distance=10.0,
+                    ),
                 ]
             )
         ),

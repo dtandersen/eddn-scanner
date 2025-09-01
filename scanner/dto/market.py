@@ -8,3 +8,4 @@ class MarketDto:
     market_name: str
     system_name: str
     landing_pad: str
+    distance: float

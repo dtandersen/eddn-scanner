@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 from scanner.dto.market import MarketDto
 from scanner.repo.market_repository import MarketRepository
 
@@ -7,7 +7,7 @@ from scanner.repo.market_repository import MarketRepository
 @dataclass
 class ListMarketsRequest:
     system: int
-    distance: Optional[int] = None
+    distance: int = 0
 
 
 @dataclass
