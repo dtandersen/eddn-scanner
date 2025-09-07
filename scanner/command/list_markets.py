@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 from scanner.dto.market import MarketDto
 from scanner.repo.market_repository import MarketRepository
 
@@ -7,7 +7,8 @@ from scanner.repo.market_repository import MarketRepository
 @dataclass
 class ListMarketsRequest:
     system: int
-    distance: int = 0
+    power_state: Optional[List[str]] = None  # field(default_factory=lambda:[])
+    distance: int = 20
 
 
 @dataclass
@@ -21,6 +22,6 @@ class ListMarkets:
 
     def execute(self, request: ListMarketsRequest) -> ListMarketsResult:
         markets = self.market_repository.find_markets_by_system(
-            request.system, request.distance
+            request.system, request.distance, request.power_state
         )
         return ListMarketsResult(markets=markets)

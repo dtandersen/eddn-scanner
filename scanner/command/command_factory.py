@@ -42,6 +42,7 @@ class CommandFactory:
     def get_system(self):
         return GetSystem(
             system_repository=self.system_repository,
+            system_state_repository=self.system_state_repository,
         )
 
     def list_systems(self):

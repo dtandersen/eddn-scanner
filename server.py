@@ -2,9 +2,9 @@ from dataclasses import dataclass
 import locale
 import logging
 import os
-from typing import List
+from typing import Annotated, List
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from scan import get_connection
 from scanner.command.command_factory import CommandFactory
@@ -106,9 +106,21 @@ class ListMarketsResponse:
     result: ListMarketsResponse2
 
 
+log = logging.getLogger("uvicorn.error")
+
+
 @app.get("/markets")
-def list_markets(system: int, distance: int = 0) -> ListMarketsResponse:
-    request = ListMarketsRequest(system=system, distance=distance)
+def list_markets(
+    system: Annotated[int, Query(ge=0)],
+    distance: Annotated[int, Query(ge=0, le=100)] = 0,
+    power_state: Annotated[List[str] | None, Query()] = None,
+) -> ListMarketsResponse:
+    log.info(
+        f"list_markets: system={system}, distance={distance}, power_state={power_state}"
+    )
+    request = ListMarketsRequest(
+        system=system, distance=distance, power_state=power_state
+    )
     command = command_factory.list_markets()
     result = command.execute(request)
     return ListMarketsResponse(result=ListMarketsResponse2(markets=result.markets))

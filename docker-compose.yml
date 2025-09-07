@@ -12,6 +12,12 @@ services:
       options:
         max-size: "10m"
         max-file: "1"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
   api:
     build: .
     env_file:
@@ -23,6 +29,6 @@ services:
       options:
         max-size: "10m"
         max-file: "1"
-    command: uv run fastapi dev server.py --host 0.0.0.0 --port 8000
+    command: uv run fastapi run server.py --host 0.0.0.0 --port 8000
     ports:
     - "9988:8000"

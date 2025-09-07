@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import Any
+from datetime import datetime, timezone
+from typing import Any, Optional
 from scanner.entity.commodity import Commodity
 from scanner.entity.market import Market
 from scanner.entity.power import Power
@@ -81,13 +81,18 @@ class TestFacade:
         )
 
     def given_system_state(
-        self, system_address: int, state: str, power: str, timestamp: datetime
+        self,
+        system_address: int,
+        state: str,
+        power: str,
+        timestamp: Optional[datetime] = None,
     ):
+
         self.system_state_repository.update_system_state(
             SystemState(
                 system_id=system_address,
                 state=state,
                 power=power,
-                timestamp=timestamp,
+                timestamp=timestamp if timestamp else datetime.now(tz=timezone.utc),
             )
         )

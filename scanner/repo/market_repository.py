@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from psycopg import Connection
 from psycopg.rows import class_row
@@ -37,7 +37,7 @@ class MarketRepository(metaclass=ABCMeta):
 
     @abstractmethod
     def find_markets_by_system(
-        self, system_id: int, distance: int = 0
+        self, system_id: int, distance: int = 0, power_state: Optional[List[str]] = None
     ) -> List[MarketDto]:
         pass
 
@@ -60,6 +60,8 @@ class MarketDtoRow:
     system_name: str
     station_type: str | None
     distance: int
+    power_state: str | None
+    power: str | None
 
 
 class ResourceNotFoundError(Exception):
@@ -141,7 +143,7 @@ class PsycopgMarketRepository(MarketRepository):
             self.connection.commit()
 
     def find_markets_by_system(
-        self, system_id: int, distance: int = 0
+        self, system_id: int, distance: int = 0, power_state: Optional[List[str]] = None
     ) -> List[MarketDto]:
         sql = """
             SELECT
@@ -150,17 +152,24 @@ class PsycopgMarketRepository(MarketRepository):
                 m.name as market_name,
                 s.name as system_name,
                 m.station_type,
-                sd.distance
+                sd.distance,
+                st.state as power_state,
+                st.power as power
             FROM market as m
             JOIN system as s on m.system_address = s.address
             JOIN v_sys_dist sd on sd.address1 = %s and sd.address2 = m.system_address
+            LEFT JOIN sys_power_state st on st.system_address = s.address
             WHERE
                 sd.distance <= %s
             """
+        params = (system_id, distance)
+        if power_state is not None:
+            sql += " AND st.state = ANY(%s)"
+            params += (power_state,)
         with self.connection.cursor(row_factory=class_row(MarketDtoRow)) as cursor:
             cursor.execute(
                 sql,
-                (system_id, distance),
+                params,
             )
             rows = cursor.fetchall()
             return [
@@ -171,6 +180,8 @@ class PsycopgMarketRepository(MarketRepository):
                     system_name=row.system_name,
                     landing_pad="?",
                     distance=float(row.distance),
+                    power_state=row.power_state,
+                    power=row.power,
                 )
                 for row in rows
             ]

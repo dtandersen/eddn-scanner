@@ -1,22 +1,21 @@
 from hamcrest import assert_that, equal_to
+import pytest
 
 from scanner.command.command_factory import CommandFactory
-from scanner.command.list_systems import ListSystemsRequest
+from scanner.command.list_systems import ListSystems, ListSystemsRequest
 from scanner.entity.system import Point3D, System
-from scanner.repo.power_repository import PsycopgPowerRepository
 from tests.facade import TestFacade
 
 
-# @pytest.fixture
-# def command(
-#     system_repository: SystemRepository, power_repository: PsycopgPowerRepository
-# ):
-#     return UpdateSystem(system_repository, power_repository)
+@pytest.fixture
+def command(
+    command_factory: CommandFactory,
+):
+    return command_factory.list_systems()
 
 
 def test_system_is_added(
-    command_factory: CommandFactory,
-    power_repository: PsycopgPowerRepository,
+    command: ListSystems,
     test_facade: TestFacade,
 ):
     test_facade.given_system(1, "System 1", Point3D(1, 2, 3))
@@ -25,7 +24,6 @@ def test_system_is_added(
     request = ListSystemsRequest(
         name="system",
     )
-    command = command_factory.list_systems()
     systems = command.execute(request)
 
     assert_that(
