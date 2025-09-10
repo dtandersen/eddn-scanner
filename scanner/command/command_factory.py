@@ -1,7 +1,9 @@
 from scanner.command.get_system import GetSystem
+from scanner.command.list_market_commodities import ListMarketCommoditiesHandler
 from scanner.command.list_markets import ListMarkets
 from scanner.command.list_systems import ListSystems
-from scanner.command.update_commodities import UpdateCommodities
+from scanner.command.list_trades import ListTradesHandler
+from scanner.command.update_commodities import UpdateMarketCommoditiesHandler
 from scanner.command.update_system import UpdateSystem
 from scanner.repo.commodity_repository import CommodityRepository
 from scanner.repo.market_repository import MarketRepository
@@ -33,7 +35,7 @@ class CommandFactory:
         )
 
     def update_commodities(self):
-        return UpdateCommodities(
+        return UpdateMarketCommoditiesHandler(
             commodity_repository=self.commodity_repository,
             market_repository=self.market_repository,
             system_repository=self.system_repository,
@@ -54,3 +56,11 @@ class CommandFactory:
         return ListMarkets(
             market_repository=self.market_repository,
         )
+
+    def list_market_commodities(self):
+        return ListMarketCommoditiesHandler(
+            commodity_repository=self.commodity_repository
+        )
+
+    def list_trades(self):
+        return ListTradesHandler(commodity_repository=self.commodity_repository)

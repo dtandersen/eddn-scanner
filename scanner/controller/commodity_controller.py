@@ -4,7 +4,7 @@ import logging
 
 # from scanner import scanner
 from scanner.command.command_factory import CommandFactory
-from scanner.command.update_commodities import UpdateCommoditiesRequest
+from scanner.command.update_commodities import UpdateCommodities
 from scanner.entity.commodity import Commodity
 from scanner.event.commodity import CommoditiesEvent, CommodityEvent
 from scanner.event.event_handler import EventBus
@@ -26,8 +26,8 @@ class CommodityController:
     def on_commodities(self, event: CommoditiesEvent):
         timestamp = datetime.fromisoformat(event.message.timestamp)
         command = self.command_factory.update_commodities()
-        command.execute(
-            UpdateCommoditiesRequest(
+        command.handle(
+            UpdateCommodities(
                 market_id=event.message.marketId,
                 station=event.message.stationName,
                 docking_access=event.message.carrierDockingAccess,

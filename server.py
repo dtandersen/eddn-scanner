@@ -7,10 +7,12 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from scan import get_connection
+from scanner.api.model import ListTradesResult, ListTradesResult2, TradeModel
 from scanner.command.command_factory import CommandFactory
 from scanner.command.get_system import GetSystemRequest
 from scanner.command.list_markets import ListMarketsRequest
 from scanner.command.list_systems import ListSystemsRequest
+from scanner.command.list_trades import ListTrades
 from scanner.dto.market import MarketDto
 from scanner.event.event_handler import EventBus
 from scanner.repo.commodity_repository import PsycopgCommodityRepository
@@ -124,3 +126,39 @@ def list_markets(
     command = command_factory.list_markets()
     result = command.execute(request)
     return ListMarketsResponse(result=ListMarketsResponse2(markets=result.markets))
+
+
+@app.get("/trades")
+def list_trades(
+    buy_market: Annotated[int, Query(ge=0)],
+    sell_market: Annotated[int | None, Query(ge=0)] = None,
+    sell_system: Annotated[int | None, Query(ge=0)] = None,
+) -> ListTradesResult2:
+    log.info(f"list_trades: buy_market={buy_market}, sell_market={sell_market}")
+    request = ListTrades(
+        buy_market=buy_market, sell_market=sell_market, sell_system=sell_system
+    )
+
+    handler = command_factory.list_trades()
+    result = handler.handle(request)
+
+    return ListTradesResult2(
+        result=ListTradesResult(
+            trades=[
+                TradeModel(
+                    buy_market_id=trade.buy_market_id,
+                    buy_market_name=trade.buy_market_name,
+                    sell_market_id=trade.sell_market_id,
+                    sell_market_name=trade.sell_market_name,
+                    commodity=trade.commodity,
+                    buy=trade.buy,
+                    sell=trade.sell,
+                    supply=trade.supply,
+                    demand=trade.demand,
+                    profit=trade.profit,
+                    distance=trade.distance,
+                )
+                for trade in result.trades
+            ]
+        )
+    )

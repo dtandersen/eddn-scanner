@@ -2,8 +2,8 @@ from datetime import datetime, timezone
 from hamcrest import assert_that, equal_to
 import pytest
 from scanner.command.update_commodities import (
+    UpdateMarketCommoditiesHandler,
     UpdateCommodities,
-    UpdateCommoditiesRequest,
 )
 
 from scanner.entity.commodity import Commodity
@@ -23,11 +23,13 @@ def command(
     market_repository: PsycopgMarketRepository,
     system_repository: SystemRepository,
 ):
-    return UpdateCommodities(commodity_repository, market_repository, system_repository)
+    return UpdateMarketCommoditiesHandler(
+        commodity_repository, market_repository, system_repository
+    )
 
 
 def test_commodity_is_added(
-    command: UpdateCommodities,
+    command: UpdateMarketCommoditiesHandler,
     commodity_repository: PsycopgCommodityRepository,
     test_facade: TestFacade,
 ):
@@ -36,7 +38,7 @@ def test_commodity_is_added(
         market_id=1, system_address=1, name="Test Station", last_updated=None
     )
     timestamp = datetime.now()
-    request = UpdateCommoditiesRequest(
+    request = UpdateCommodities(
         market_id=1,
         station="Test Station",
         system="Test System",
@@ -52,7 +54,7 @@ def test_commodity_is_added(
             )
         ],
     )
-    command.execute(request)
+    command.handle(request)
 
     assert_that(
         commodity_repository.all(),
@@ -72,7 +74,7 @@ def test_commodity_is_added(
 
 
 def test_multiple_commodities_added(
-    command: UpdateCommodities,
+    command: UpdateMarketCommoditiesHandler,
     commodity_repository: PsycopgCommodityRepository,
     test_facade: TestFacade,
 ):
@@ -82,7 +84,7 @@ def test_multiple_commodities_added(
     )
 
     timestamp = datetime.now()
-    request = UpdateCommoditiesRequest(
+    request = UpdateCommodities(
         market_id=1,
         station="Test Station",
         system="Test System",
@@ -106,7 +108,7 @@ def test_multiple_commodities_added(
             ),
         ],
     )
-    command.execute(request)
+    command.handle(request)
 
     assert_that(
         commodity_repository.all(),
@@ -134,7 +136,7 @@ def test_multiple_commodities_added(
 
 
 def test_previous_market_prices_are_overwritten(
-    command: UpdateCommodities,
+    command: UpdateMarketCommoditiesHandler,
     commodity_repository: PsycopgCommodityRepository,
     market_repository: PsycopgMarketRepository,
     test_facade: TestFacade,
@@ -149,7 +151,7 @@ def test_previous_market_prices_are_overwritten(
     )
 
     timestamp = datetime.now(tz=timezone.utc)
-    request = UpdateCommoditiesRequest(
+    request = UpdateCommodities(
         market_id=1,
         station="Test Station",
         system="Test System",
@@ -165,7 +167,7 @@ def test_previous_market_prices_are_overwritten(
             ),
         ],
     )
-    command.execute(request)
+    command.handle(request)
 
     assert_that(
         commodity_repository.all(),
@@ -188,7 +190,7 @@ def test_previous_market_prices_are_overwritten(
 
 
 def test_add_market_if_system_exists(
-    command: UpdateCommodities,
+    command: UpdateMarketCommoditiesHandler,
     commodity_repository: PsycopgCommodityRepository,
     market_repository: PsycopgMarketRepository,
     test_facade: TestFacade,
@@ -196,7 +198,7 @@ def test_add_market_if_system_exists(
     test_facade.given_system(address=1, name="System", position=Point3D(0, 0, 0))
 
     timestamp = datetime.now(tz=timezone.utc)
-    request = UpdateCommoditiesRequest(
+    request = UpdateCommodities(
         market_id=1,
         station="ABC-123",
         system="System",
@@ -214,7 +216,7 @@ def test_add_market_if_system_exists(
             ),
         ],
     )
-    command.execute(request)
+    command.handle(request)
 
     assert_that(
         market_repository.all(),
@@ -266,11 +268,11 @@ def test_add_market_if_system_exists(
 
 
 def test_dont_add_commodities_if_market_doesnt_exist(
-    command: UpdateCommodities,
+    command: UpdateMarketCommoditiesHandler,
     commodity_repository: PsycopgCommodityRepository,
 ):
     timestamp = datetime.now()
-    request = UpdateCommoditiesRequest(
+    request = UpdateCommodities(
         market_id=1,
         station="Unknown",
         system="Unknown",
@@ -286,7 +288,7 @@ def test_dont_add_commodities_if_market_doesnt_exist(
             ),
         ],
     )
-    command.execute(request)
+    command.handle(request)
 
     assert_that(
         commodity_repository.all(),
@@ -295,7 +297,7 @@ def test_dont_add_commodities_if_market_doesnt_exist(
 
 
 def test_docking_access_is_updated(
-    command: UpdateCommodities,
+    command: UpdateMarketCommoditiesHandler,
     market_repository: PsycopgMarketRepository,
     test_facade: TestFacade,
 ):
@@ -309,7 +311,7 @@ def test_docking_access_is_updated(
     )
 
     timestamp = datetime.now(tz=timezone.utc)
-    request = UpdateCommoditiesRequest(
+    request = UpdateCommodities(
         market_id=1,
         station="ABC-123",
         system="System",
@@ -327,7 +329,7 @@ def test_docking_access_is_updated(
             ),
         ],
     )
-    command.execute(request)
+    command.handle(request)
 
     assert_that(
         market_repository.get_market(1),
@@ -345,7 +347,7 @@ def test_docking_access_is_updated(
 
 
 def test_station_type_is_updated(
-    command: UpdateCommodities,
+    command: UpdateMarketCommoditiesHandler,
     market_repository: PsycopgMarketRepository,
     test_facade: TestFacade,
 ):
@@ -358,7 +360,7 @@ def test_station_type_is_updated(
     )
 
     timestamp = datetime.now(tz=timezone.utc)
-    request = UpdateCommoditiesRequest(
+    request = UpdateCommodities(
         market_id=1,
         station="ABC-123",
         system="System",
@@ -376,7 +378,7 @@ def test_station_type_is_updated(
             ),
         ],
     )
-    command.execute(request)
+    command.handle(request)
 
     assert_that(
         market_repository.get_market(1),
